@@ -1,0 +1,30 @@
+﻿@page "/tripcreation"
+@using TravelManagerFE.Data
+
+<h3>TripCreation</h3>
+
+@inject TripService TripService
+
+    <div>
+        <input placeholder="Trip title" @bind="Title" />
+    </div>
+    <div>
+        <button @onclick="CreateTrip">Create trip</button>
+    </div>
+
+    @code {
+        private string Title { get; set; }
+
+        public void CreateTrip()
+        {
+            var trip = new TripRequest
+            {
+                Title = Title
+            };
+
+            TripService.CreateTrip(trip);
+        }
+
+        
+
+    }

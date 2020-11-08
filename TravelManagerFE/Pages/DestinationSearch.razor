@@ -1,0 +1,59 @@
+﻿@using TravelManagerFE.Data
+
+@page "/destinationsearch"
+
+<h3>Destination Search</h3>
+
+@inject SearchService SearchService
+
+<div>
+    <input placeholder="location" @bind="query" />
+    <button @onclick="SearchForDestinations">Search</button>
+</div>
+<div>
+    @if (destinations.Any())
+    {
+        <table>
+            <tr>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Address</th>
+            </tr>
+            @foreach (var destination in destinations)
+            {
+                <tr>
+                    <td>@destination.Title</td>
+                    <td>@destination.Type</td>
+                    <td>@destination.Address</td>
+                    <td>
+                        <button @onclick="@(() => OnClick.InvokeAsync(destination))">Click me</button>
+                    </td>
+                </tr>
+            }
+        </table>
+    }
+</div>
+
+@code {
+    private List<Destination> destinations = new List<Destination>();
+
+    private string query;
+
+    private bool tripViewEnabled { get; set; }
+
+    [Parameter] 
+    public EventCallback<Destination> OnClick { get; set; }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        tripViewEnabled = false;
+    }
+
+    private async Task SearchForDestinations()
+    {
+        destinations = await SearchService.SearchForDestinations(query);
+    }
+
+    private void DisplayTrips() => tripViewEnabled = !tripViewEnabled;
+}

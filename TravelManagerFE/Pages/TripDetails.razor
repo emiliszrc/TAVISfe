@@ -1,0 +1,53 @@
+﻿@using TravelManagerFE.Data
+@using TravelManagerFE.Pages
+
+@page "/tripDetails/{id}"
+
+<h3>Trip Details</h3>
+
+@inject NavigationManager NavigationManager
+@inject TripService TripService
+
+
+<div>
+    <b>@trip.Id</b>
+</div>
+<div>
+    <ul>
+        @foreach (var destination in trip.Destinations)
+        {
+            <li>@destination.Title</li>
+        }
+    </ul>
+</div>
+<div>
+    <button @onclick="DisplayDestinationSearch">Search for destinations</button>
+</div>
+
+@if (DestinationSearchShown)
+{
+    <DestinationSearch OnClick="ClickHandler"></DestinationSearch>
+}
+
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+    private Trip trip = new Trip();
+    private bool DestinationSearchShown { get; set; }
+
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        DestinationSearchShown = false;
+        trip = TripService.GetTrip(Id);
+    }
+
+    void ClickHandler(Destination destination)
+    {
+        trip = TripService.AddDestinationToTrip(trip.Id, destination);
+    }
+
+    private void DisplayDestinationSearch() => DestinationSearchShown = !DestinationSearchShown;
+}

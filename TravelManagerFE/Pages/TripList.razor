@@ -1,0 +1,50 @@
+﻿@using TravelManagerFE.Data
+
+@page "/tripList"
+
+<h3>Trip List</h3>
+
+@inject NavigationManager NavigationManager
+@inject TripService TripService
+
+<button @onclick="CreateTrip">Create new</button>
+<div>
+    @if (trips.Any())
+    {
+        <table>
+            <tr>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Address</th>
+            </tr>
+            @foreach (var trip in trips)
+            {
+                <tr>
+                    <td>@trip.Id</td>
+                    <td>@trip.Title</td>
+                    <td><button @onclick="@(() => GetDetails(trip))">Details</button></td>
+                </tr>
+            }
+        </table>
+    }
+</div>
+
+@code {
+    private List<Trip> trips = new List<Trip>();
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        trips = TripService.GetTrips();
+    }
+
+    private void GetDetails(Trip trip)
+    {
+        NavigationManager.NavigateTo($"tripdetails/{trip.Id}");
+    }
+
+    private void CreateTrip()
+    {
+        NavigationManager.NavigateTo($"tripcreation");
+    }
+}
