@@ -82,6 +82,25 @@ namespace TravelManagerFE.Data
 
             return tripResponse;
         }
+
+        public Trip ReorderTripDestinations(Trip trip)
+        {
+            var client = new RestClient($"https://localhost:44308/api/trips/{trip.Id}/Destinations/Reorder");
+            var request = new RestRequest(Method.POST);
+            request.AddHeader("content-type", "application/json");
+            request.AddJsonBody(trip.Destinations);
+
+            var response = client.Execute(request);
+
+            if (!response.StatusCode.Equals(System.Net.HttpStatusCode.OK))
+            {
+                //throw new TripAdvisorApiException($"Could not retrieve information from TripAdvisor. Response code: {response.StatusCode}");
+            }
+
+            var tripResponse = JsonConvert.DeserializeObject<Trip>(response.Content);
+
+            return tripResponse;
+        }
     }
 
     public class DestinationRequest

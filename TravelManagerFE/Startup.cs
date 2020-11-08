@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Plk.Blazor.DragDrop;
 using TravelManagerFE.Data;
 
 namespace TravelManagerFE
@@ -31,6 +32,8 @@ namespace TravelManagerFE
             services.AddSingleton<WeatherForecastService>();
             services.AddSingleton<SearchService>();
             services.AddSingleton<TripService>();
+
+            services.AddBlazorDragDrop();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

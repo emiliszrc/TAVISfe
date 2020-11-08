@@ -1,5 +1,6 @@
 ﻿@using TravelManagerFE.Data
 @using TravelManagerFE.Pages
+@using Plk.Blazor.DragDrop
 
 @page "/tripDetails/{id}"
 
@@ -12,24 +13,18 @@
 <div>
     <b>@trip.Id</b>
 </div>
-<br/>
-<br/>
+<br />
+<br />
 <b>Destinations</b>
+<Dropzone Items="trip.Destinations">
+    <div>@context.Title</div>
+</Dropzone>
 <div>
-    <ul>
-        @foreach (var destination in trip.Destinations)
-        {
-            <li>@destination.Title</li>
-            <li>@destination.CreatedDate</li>
-            <li>@destination.Type</li>
-        }
-    </ul>
-</div>
-<div>
+    <button @onclick="SaveDestinationOrder">Save destination order</button>
     <button @onclick="DisplayDestinationSearch">Search for destinations</button>
 </div>
-<br/>
-<br/>
+<br />
+<br />
 @if (DestinationSearchShown)
 {
     <DestinationSearch OnClick="ClickHandler"></DestinationSearch>
@@ -39,7 +34,7 @@
 @code {
     [Parameter]
     public string Id { get; set; }
-    private Trip trip = new Trip();
+    public Trip trip = new Trip();
     private bool DestinationSearchShown { get; set; }
 
 
@@ -48,6 +43,7 @@
         base.OnInitialized();
         DestinationSearchShown = false;
         trip = TripService.GetTrip(Id);
+        trip.Destinations = trip.Destinations.OrderBy(destination => destination.Index).ToList();
     }
 
     void ClickHandler(Destination destination)
@@ -56,4 +52,14 @@
     }
 
     private void DisplayDestinationSearch() => DestinationSearchShown = !DestinationSearchShown;
+
+    private void SaveDestinationOrder()
+    {
+        foreach (var tripDestination in trip.Destinations)
+        {
+            tripDestination.Index = trip.Destinations.IndexOf(tripDestination).ToString();
+        }
+
+        TripService.ReorderTripDestinations(trip);
+    }
 }

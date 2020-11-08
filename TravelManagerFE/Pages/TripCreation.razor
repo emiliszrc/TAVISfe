@@ -3,28 +3,30 @@
 
 <h3>TripCreation</h3>
 
+@inject NavigationManager NavigationManager
 @inject TripService TripService
 
-    <div>
-        <input placeholder="Trip title" @bind="Title" />
-    </div>
-    <div>
-        <button @onclick="CreateTrip">Create trip</button>
-    </div>
+<div>
+    <input placeholder="Trip title" @bind="Title" />
+</div>
+<div>
+    <button @onclick="CreateTrip">Create trip</button>
+</div>
 
-    @code {
-        private string Title { get; set; }
+@code {
+    private string Title { get; set; }
 
-        public void CreateTrip()
+    public void CreateTrip()
+    {
+        var trip = new TripRequest
         {
-            var trip = new TripRequest
-            {
-                Title = Title
-            };
+            Title = Title
+        };
 
-            TripService.CreateTrip(trip);
-        }
-
-        
-
+        TripService.CreateTrip(trip);
+        NavigationManager.NavigateTo("triplist");
     }
+
+
+
+}
