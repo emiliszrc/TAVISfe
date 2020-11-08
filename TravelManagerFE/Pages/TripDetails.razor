@@ -12,18 +12,24 @@
 <div>
     <b>@trip.Id</b>
 </div>
+<br/>
+<br/>
+<b>Destinations</b>
 <div>
     <ul>
         @foreach (var destination in trip.Destinations)
         {
             <li>@destination.Title</li>
+            <li>@destination.CreatedDate</li>
+            <li>@destination.Type</li>
         }
     </ul>
 </div>
 <div>
     <button @onclick="DisplayDestinationSearch">Search for destinations</button>
 </div>
-
+<br/>
+<br/>
 @if (DestinationSearchShown)
 {
     <DestinationSearch OnClick="ClickHandler"></DestinationSearch>
