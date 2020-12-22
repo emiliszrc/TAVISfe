@@ -15,10 +15,12 @@
     <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
     <link href="css/site.css" rel="stylesheet" />
     <link href="css/dragdrop.css" rel="stylesheet" />
+    <link href="_content/Syncfusion.Blazor/styles/bootstrap4.css" rel="stylesheet" />
+    @*<link href="https://cdn.syncfusion.com/blazor/{{version}}/styles/{{theme}}.css" rel="stylesheet" />*@
 </head>
 <body>
     <app>
-        <component type="typeof(App)" render-mode="ServerPrerendered" />
+        <component type="typeof(App)" render-mode="Server" />
     </app>
 
     <div id="blazor-error-ui">
@@ -33,5 +35,8 @@
     </div>
 
     <script src="_framework/blazor.server.js"></script>
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBsbhG8jrghjF0VMCS90Ex7AQnaoy2HVUY&v=3"></script>
+<script src="_content/BlazorGoogleMaps/objectManager.js"></script>
+
 </body>
 </html>

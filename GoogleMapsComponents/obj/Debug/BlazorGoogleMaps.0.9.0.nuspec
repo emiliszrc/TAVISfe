@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>BlazorGoogleMaps</id>
+    <version>0.9.0</version>
+    <authors>Rungwiroon</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>
+    <projectUrl>https://github.com/rungwiroon/BlazorGoogleMaps</projectUrl>
+    <description>Blazor GoogleMaps components</description>
+    <repository url="https://github.com/rungwiroon/BlazorGoogleMaps" />
+    <dependencies>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="Microsoft.AspNetCore.Components" version="3.1.3" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.AspNetCore.Components.Web" version="3.1.3" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.CSharp" version="4.7.0" exclude="Build,Analyzers" />
+        <dependency id="Newtonsoft.Json" version="12.0.3" exclude="Build,Analyzers" />
+        <dependency id="OneOf" version="2.1.151" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="C:\Users\emzar\source\BlazorGoogleMaps\GoogleMapsComponents\bin\Debug\netstandard2.0\GoogleMapsComponents.dll" target="lib\netstandard2.0\GoogleMapsComponents.dll" />
+    <file src="C:\Users\emzar\source\BlazorGoogleMaps\GoogleMapsComponents\obj\Debug\netstandard2.0\staticwebassets\msbuild.BlazorGoogleMaps.Microsoft.AspNetCore.StaticWebAssets.props" target="build\Microsoft.AspNetCore.StaticWebAssets.props" />
+    <file src="C:\Users\emzar\source\BlazorGoogleMaps\GoogleMapsComponents\obj\Debug\netstandard2.0\staticwebassets\msbuild.build.BlazorGoogleMaps.props" target="build\BlazorGoogleMaps.props" />
+    <file src="C:\Users\emzar\source\BlazorGoogleMaps\GoogleMapsComponents\obj\Debug\netstandard2.0\staticwebassets\msbuild.buildMultiTargeting.BlazorGoogleMaps.props" target="buildMultiTargeting\BlazorGoogleMaps.props" />
+    <file src="C:\Users\emzar\source\BlazorGoogleMaps\GoogleMapsComponents\obj\Debug\netstandard2.0\staticwebassets\msbuild.buildTransitive.BlazorGoogleMaps.props" target="buildTransitive\BlazorGoogleMaps.props" />
+    <file src="C:\Users\emzar\source\BlazorGoogleMaps\GoogleMapsComponents\wwwroot\background.png" target="staticwebassets\background.png" />
+    <file src="C:\Users\emzar\source\BlazorGoogleMaps\GoogleMapsComponents\wwwroot\objectManager.js" target="staticwebassets\objectManager.js" />
+    <file src="C:\Users\emzar\source\BlazorGoogleMaps\GoogleMapsComponents\wwwroot\styles.css" target="staticwebassets\styles.css" />
+  </files>
+</package>

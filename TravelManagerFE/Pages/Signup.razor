@@ -1,0 +1,57 @@
+﻿@using Syncfusion.Blazor.DropDowns
+@using TravelManagerFE.Data.Models
+
+@page "/signup"
+<div class="fill">
+    <div class="limiter">
+        <div class="wrap-login">
+            <span class="login-title">
+                <div>
+                    <b>Sign up</b>
+                </div>
+            </span>
+            <div class="login-input-field">
+                <input class="login-input" placeholder="username" @bind="username"/>
+            </div>
+            <div class="login-input-field">
+                <input class="login-input" placeholder="password" @bind="password"/>
+            </div>
+            <div class="login-input-dropdown">
+                <select class="form-control selectpicker" @bind="ddlIndex">
+                    <option>--select--</option>
+                    @foreach (var item in organisations)
+                    {
+                        <option value="@item.Id">@item.Title</option>
+                    }
+                </select>
+            </div>
+            <div class="login-button-wrap">
+                <div>
+                    <button @onclick="SignupUser">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@inject OrganisationService organisationService
+@inject UserService userService;
+@inject NavigationManager NavigationManager;
+
+@code {
+    public string username;
+    public string password;
+    List<Organisation> organisations = new List<Organisation>();
+    private string ddlIndex { get; set; } = "";
+
+    protected override void OnInitialized()
+    {
+        organisations = organisationService.getPublicOrganisations();
+    }
+
+    public void SignupUser()
+    {
+        userService.CreateUser(username, password, ddlIndex);
+        NavigationManager.NavigateTo("/");
+    }
+}

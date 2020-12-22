@@ -1,15 +1,37 @@
-﻿@inherits LayoutComponentBase
+﻿@using TravelManagerFE.Data
+@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
-<div class="sidebar">
-    <NavMenu />
-</div>
+<AuthorizeView>
+    <Authorized>
+        <div class="sidebar">
+            <NavMenu />
+        </div>
+    </Authorized>
+    <NotAuthorized></NotAuthorized>
+</AuthorizeView>
 
 <div class="main">
-    <div class="top-row px-4">
-        <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
-    </div>
+        <AuthorizeView>
+            <Authorized>
+                <div class="top-row px-4">
+                    <a href="/ " @onclick="(() => Logout())">Logout</a>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+            </NotAuthorized>
+        </AuthorizeView>
 
     <div class="content px-4">
         @Body
     </div>
 </div>
+
+@code{
+    public async Task Logout()
+    {
+        await ((CustomAuthenticationStateProvider)AuthenticationStateProvider).MarkUserAsLoggedOut();
+        NavigationManager.NavigateTo("");
+    }
+}

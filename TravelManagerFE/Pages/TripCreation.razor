@@ -7,14 +7,31 @@
 @inject TripService TripService
 
 <div>
-    <input placeholder="Trip title" @bind="Title" />
-</div>
-<div>
-    <button @onclick="CreateTrip">Create trip</button>
+    <EditForm Model="@tripRequest" OnValidSubmit="@CreateTrip">
+        <div class="body-limiter">
+            <div class="wrap-login">
+                <label class="login-input">
+                    Title:
+                    <InputText  class="login-input-field" id="title" @bind-Value="tripRequest.Title"/>
+                </label>
+                <label>
+                    Type:
+                    <InputSelect  class="login-input-field" id="type" @bind-Value="tripRequest.Type">
+                        @foreach (var value in Enum.GetValues(typeof(TripType)))
+                        {
+                            <option>@value</option>
+                        }
+                    </InputSelect>
+                </label>
+                <button class="login-button-wrap" type="submit">Submit</button>
+            </div>
+        </div>
+    </EditForm>
 </div>
 
 @code {
     private string Title { get; set; }
+    private TripRequest tripRequest { get; set; } = new TripRequest();
 
     public void CreateTrip()
     {
@@ -23,10 +40,9 @@
             Title = Title
         };
 
-        TripService.CreateTrip(trip);
+        TripService.CreateTrip(tripRequest);
         NavigationManager.NavigateTo("triplist");
     }
-
 
 
 }

@@ -47,7 +47,7 @@ app {
 }
 
 .sidebar {
-    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #00008b 70%);
 }
 
     .sidebar .top-row {
@@ -192,4 +192,99 @@ td {
     width: 400px;
     overflow: hidden;
     padding: 1em;
+}
+
+.login-input {
+    font-family: 'Roboto';
+    width: 100%;
+    border: none;
+    background: #f7f7f7
+}
+
+.login-input-field {
+    margin-bottom: 37px;
+    border-bottom: 2px solid;
+    width: 100%;
+}
+
+.login-input-dropdown {
+    margin-bottom: 37px;
+    width: 100%;
+}
+
+.form-control
+    .selectpicker {
+    margin-bottom: 37px;
+}
+
+.login-button-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 37px;
+}
+
+.limiter {
+    width: 100%;
+    min-height: 50vh;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+}
+
+.login-title {
+    position: relative;
+    bottom: 50px;
+    width: 100%;
+    text-align: center;
+    font-family: 'Roboto';
+    font-size: 1.1rem;
+}
+
+
+.wrap-login {
+    width: 390px;
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    padding: 77px 55px 33px 55px;
+    box-shadow: 0 5px 10px 0px rgba(0, 0, 0, 0.1);
+    -moz-box-shadow: 0 5px 10px 0px rgba(0, 0, 0, 0.1);
+    -webkit-box-shadow: 0 5px 10px 0px rgba(0, 0, 0, 0.1);
+    -o-box-shadow: 0 5px 10px 0px rgba(0, 0, 0, 0.1);
+    -ms-box-shadow: 0 5px 10px 0px rgba(0, 0, 0, 0.1);
+    background: #f7f7f7
+}
+
+.fill {
+    width: 100%;
+    height: 100%;
+    margin: 0px;
+}
+
+.login-signup {
+    font-family: 'Roboto';
+    width: 100%;
+    font-size: 0.8rem;
+    border: none;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+
+tr:nth-child(even) {
+    background-color: #f2f2f2
+}
+
+.body-limiter {
+    width: 100%;
+    min-height: 50vh;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: left;
+    padding: 15px;
 }

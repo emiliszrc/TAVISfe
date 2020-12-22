@@ -11,31 +11,69 @@
 
 
 <div>
-    <b>@trip.Id</b>
+    <b>@trip.Title</b>
+    <b>@trip.Type</b>
 </div>
 <br />
 <br />
-<b>Destinations</b>
+<EditForm Model="@destinationRequest">
+    <div class="body-limiter">
+        <div class="wrap-login">
+            <label class="login-input">
+                Arrival:
+                <InputDate class="login-input-field" id="arrival" @bind-Value="destinationRequest.Arrival" />
+            </label>
+            
+
+            <label class="login-input">
+                Departure:
+                <InputDate class="login-input-field" id="departure" @bind-Value="destinationRequest.Departure" />
+            </label>
+            <label>
+                Price per person:
+                <InputNumber class="login-input-field" id="price" @bind-Value="destinationRequest.PricePerPerson" />
+            </label>
+        </div>
+    </div>
+</EditForm>
+
+<button @onclick="DisplayDestinationSearch">Search for destinations</button>
+
 <Dropzone Items="trip.Destinations">
     <div>@context.Title</div>
 </Dropzone>
 <div>
     <button @onclick="SaveDestinationOrder">Save destination order</button>
-    <button @onclick="DisplayDestinationSearch">Search for destinations</button>
 </div>
 <br />
 <br />
+<button @onclick="DisplayMapRoutes">Show On Map</button>
+
 @if (DestinationSearchShown)
 {
     <DestinationSearch OnClick="ClickHandler"></DestinationSearch>
 }
 
+@if (MapRoutesShown)
+{
+<MapRoutes Trip = "@trip"/>
+}
 
 @code {
     [Parameter]
     public string Id { get; set; }
     public Trip trip = new Trip();
     private bool DestinationSearchShown { get; set; }
+    private bool MapRoutesShown { get; set; }
+    private DestinationAddRequest destinationRequest { get; set; } = new DestinationAddRequest();
+
+    private class DestinationAddRequest
+    {
+        public string Id { get; set; }
+        public DateTime Arrival { get; set; }
+        public DateTime Departure { get; set; }
+        public float PricePerPerson { get; set; }
+    }
 
 
     protected override void OnInitialized()
@@ -52,6 +90,7 @@
     }
 
     private void DisplayDestinationSearch() => DestinationSearchShown = !DestinationSearchShown;
+    private void DisplayMapRoutes() => MapRoutesShown = !MapRoutesShown;
 
     private void SaveDestinationOrder()
     {
@@ -62,4 +101,6 @@
 
         TripService.ReorderTripDestinations(trip);
     }
+
+
 }

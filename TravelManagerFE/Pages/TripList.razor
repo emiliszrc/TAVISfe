@@ -2,32 +2,44 @@
 
 @page "/tripList"
 
-<h3>Trip List</h3>
+<AuthorizeView>
+    <Authorized>
+        <div>
+            <h3>Trip List</h3>
+            <button @onclick="CreateTrip">Create new</button>
+        </div>
 
-@inject NavigationManager NavigationManager
-@inject TripService TripService
+        @inject NavigationManager NavigationManager
+        @inject TripService TripService
 
-<button @onclick="CreateTrip">Create new</button>
-<div>
-    @if (trips.Any())
-    {
-        <table>
-            <tr>
-                <th>Title</th>
-                <th>Type</th>
-                <th>Address</th>
-            </tr>
-            @foreach (var trip in trips)
+        <div>
+            @if (trips.Any())
             {
-                <tr>
-                    <td>@trip.Id</td>
-                    <td>@trip.Title</td>
-                    <td><button @onclick="@(() => GetDetails(trip))">Details</button></td>
-                </tr>
+                <table>
+                    <tr>
+                        <th>Title</th>
+                        <th>Type</th>
+                        <th>Cost</th>
+                        <th></th>
+                    </tr>
+                    @foreach (var trip in trips)
+                    {
+                        <tr class="trip-table-row">
+                            <td>@trip.Title</td>
+                            <td>@trip.Type</td>
+                            <td>@trip.Cost</td>
+                            <td><button @onclick="@(() => GetDetails(trip))">Details</button></td>
+                        </tr>
+                    }
+                </table>
             }
-        </table>
-    }
-</div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        You are not welcome here!
+    </NotAuthorized>
+</AuthorizeView>
+
 
 @code {
     private List<Trip> trips = new List<Trip>();
