@@ -1,0 +1,112 @@
+﻿<h3>Review</h3>
+
+<h4>@Trip.Destinations.Count() destinations</h4>
+
+
+<MatAccordion>
+    @foreach (var destination in Trip.Destinations)
+    {
+        <MatExpansionPanel>
+            <MatExpansionPanelSummary>
+                <MatExpansionPanelHeader>
+                    @destination.Title
+                </MatExpansionPanelHeader>
+                @if (CurrentReview != null && CurrentReview.Comments.Any(cm => cm.DestinationIndex == destination.Index))
+                {
+                    <MatExpansionPanelSubHeader>
+                        @CurrentReview.Comments.Where(cm => cm.DestinationIndex == destination.Index).Count() comments
+                    </MatExpansionPanelSubHeader>
+                }
+            </MatExpansionPanelSummary>
+            <MatExpansionPanelDetails>
+                @if (CurrentReview != null)
+                {
+                    <MatList SingleSelection="true">
+                        @foreach (var comment in CurrentReview.Comments.Where(cm => cm.DestinationIndex == destination.Index))
+                        {
+                            <MatListItem>
+                                <p>@comment.Text</p>
+                                <p>@*@comment.Creator*@</p>
+                            </MatListItem>
+                        }
+
+                    </MatList>
+                }
+                <p>
+
+                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-2"><MatButton @onclick="@(() => PostComment(destination))"> Post comment </MatButton></div>
+                </p>
+            </MatExpansionPanelDetails>
+        </MatExpansionPanel>
+    }
+</MatAccordion>
+
+@page "/review/{id}"
+@using Newtonsoft.Json
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Syncfusion.Blazor.Kanban
+@using TravelManagerFE.Data.Models
+
+@inject TripService TripService
+@inject Blazored.SessionStorage.ISessionStorageService SessionStorage
+@inject NavigationManager NavigationManager
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+    public Trip Trip { get; set; }
+    public User CurrentUser { get; set; }
+    public Data.Models.Review CurrentReview { get; set; }
+
+    [CascadingParameter] public IModalService Modal { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        base.OnInitialized();
+
+        Trip = TripService.GetTrip(Id);
+
+        var user = await SessionStorage.GetItemAsync<string>("user");
+        CurrentUser = JsonConvert.DeserializeObject<User>(user);
+
+        var reviewRequest = new ReviewRequest
+        {
+            ApprovalStatus = "not approved",
+            Text = "",
+            TripId = Id,
+            UserId = CurrentUser.Id
+        };
+
+        var reviewsByUserId = TripService.GetReviewBy(Id, CurrentUser.Id);
+
+        var review = reviewsByUserId.FirstOrDefault(r => r.ApprovalStatus == "not approved");
+
+        CurrentReview = review == null ? TripService.CreateReview(reviewRequest) : review;
+    }
+
+
+
+    private async void PostComment(Destination destination)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(destination), destination);
+        var formModal = Modal.Show<CreateComment>("Add comment", parameters);
+        var result = await formModal.Result;
+        var comment = result.Data.ToString();
+        var commentRequest = new CommentRequest
+        {
+            DestinationIndex = destination.Index,
+            ReviewId = CurrentReview.Id,
+            Text = comment
+        };
+
+        CurrentReview = TripService.PostComment(CurrentReview.Id, Trip.Id, commentRequest);
+
+        InvokeAsync(() =>
+        {
+
+            StateHasChanged();
+        });
+    }
+
+}

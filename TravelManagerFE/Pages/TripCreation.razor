@@ -1,10 +1,13 @@
 ﻿@page "/tripcreation"
 @using TravelManagerFE.Data
+@using TravelManagerFE.Data.Models
 
 <h3>TripCreation</h3>
 
 @inject NavigationManager NavigationManager
 @inject TripService TripService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserService UserService;
 
 <div>
     <EditForm Model="@tripRequest" OnValidSubmit="@CreateTrip">
@@ -12,11 +15,11 @@
             <div class="wrap-login">
                 <label class="login-input">
                     Title:
-                    <InputText  class="login-input-field" id="title" @bind-Value="tripRequest.Title"/>
+                    <InputText class="login-input-field" id="title" @bind-Value="tripRequest.Title" />
                 </label>
                 <label>
                     Type:
-                    <InputSelect  class="login-input-field" id="type" @bind-Value="tripRequest.Type">
+                    <InputSelect class="login-input-field" id="type" @bind-Value="tripRequest.Type">
                         @foreach (var value in Enum.GetValues(typeof(TripType)))
                         {
                             <option>@value</option>
@@ -33,12 +36,12 @@
     private string Title { get; set; }
     private TripRequest tripRequest { get; set; } = new TripRequest();
 
-    public void CreateTrip()
+    public async void CreateTrip()
     {
-        var trip = new TripRequest
-        {
-            Title = Title
-        };
+        //TODO
+        var currentlyLoggedIn = await ((CustomAuthenticationStateProvider)AuthenticationStateProvider).GetCurrentUser();
+
+        tripRequest.CreatorId = currentlyLoggedIn.Id;
 
         TripService.CreateTrip(tripRequest);
         NavigationManager.NavigateTo("triplist");

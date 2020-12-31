@@ -1,5 +1,6 @@
 ﻿
 @using TravelManagerFE.Data
+@using Newtonsoft.Json
 
 @page "/"
     <div class="fill">
@@ -40,11 +41,16 @@
 
         public async Task LoginUser()
         {
-            var currentUser = await UserService.Login(username, password);
-            ((CustomAuthenticationStateProvider)AuthenticationStateProvider).MarkUserAsAuthenticated(username);
-            NavigationManager.NavigateTo("/tripList");
+            var currentUser = await UserService.GetByUsername(username);
 
-            await SessionStorage.SetItemAsync("username", username);
+            if (currentUser != null && currentUser.Password == password)
+            {
+                ((CustomAuthenticationStateProvider) AuthenticationStateProvider).MarkUserAsAuthenticated(currentUser);
+
+                var serialized = JsonConvert.SerializeObject(currentUser);
+                await SessionStorage.SetItemAsync("user", serialized);
+                NavigationManager.NavigateTo("/tripList");
+            }
         }
 
         public void SignupNew()

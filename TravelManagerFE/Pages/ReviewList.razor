@@ -1,0 +1,62 @@
+﻿@using Newtonsoft.Json
+<h3>Reviews</h3>
+
+@page "/reviewList"
+<AuthorizeView>
+    <Authorized>
+        <div>
+            @if (trips.Any())
+            {
+
+                @if (currentUser != null)
+                {
+                    <table>
+                        <tr>
+                            <th>Title</th>
+                            <th>Type</th>
+                            <th>Cost</th>
+                            <th></th>
+                        </tr>
+                        @foreach (var trip in trips.Where(t => t.Creator.OrganisationId == currentUser.OrganisationId))
+                        {
+                            <tr class="trip-table-row">
+                                <td>@trip.Title</td>
+                                <td>@trip.Type</td>
+                                <td>@trip.Cost</td>
+                                <td><button @onclick="@(() => GetDetails(trip))">Review</button></td>
+                            </tr>
+                        }
+                    </table>
+                }
+            }
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        You are not welcome here!
+    </NotAuthorized>
+</AuthorizeView>
+
+@inject TripService TripService
+@inject Blazored.SessionStorage.ISessionStorageService SessionStorage
+@inject NavigationManager NavigationManager
+
+@code {
+    public List<Trip> trips = new List<Trip>();
+    public User currentUser;
+
+    protected override async Task OnInitializedAsync()
+    {
+        base.OnInitialized();
+
+        trips = TripService.GetTrips();
+
+        var user = await SessionStorage.GetItemAsync<string>("user");
+        currentUser = JsonConvert.DeserializeObject<User>(user);
+    }
+
+    private void GetDetails(Trip trip)
+    {
+        NavigationManager.NavigateTo($"review/{trip.Id}");
+    }
+
+}

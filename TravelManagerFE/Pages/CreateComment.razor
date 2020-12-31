@@ -1,0 +1,17 @@
+﻿<h3>Comment</h3>
+<p>
+    <MatTextField @bind-Value="@comment" TextArea="true"></MatTextField>
+</p>
+<MatButton @onclick="@(() => PostComment())"> Post </MatButton>
+@code {
+    public string comment { get; set; }
+    [Parameter]
+    public Destination destination { get; set; }
+    [CascadingParameter] 
+    BlazoredModalInstance BlazoredModal { get; set; }
+
+    async Task PostComment()
+    {
+        await BlazoredModal.Close(ModalResult.Ok<string>(comment));
+    }
+}

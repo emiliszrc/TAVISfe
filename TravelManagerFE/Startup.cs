@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Blazored.Modal;
 using Blazored.SessionStorage;
+using MatBlazor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -37,7 +39,8 @@ namespace TravelManagerFE
             services.AddSingleton<UserService>();
             services.AddSingleton<OrganisationService>();
             services.AddBlazoredSessionStorage();
-            services.AddSyncfusionBlazor();
+            services.AddMatBlazor();
+            services.AddBlazoredModal();
 
             services.AddBlazorDragDrop();
             services.AddServerSideBlazor().AddHubOptions(config => config.MaximumReceiveMessageSize = 100048576);

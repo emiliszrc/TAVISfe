@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Blazored.SessionStorage;
 using Microsoft.AspNetCore.Components.Authorization;
+using Newtonsoft.Json;
 
 namespace TravelManagerFE.Data
 {
@@ -19,15 +20,15 @@ namespace TravelManagerFE.Data
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            var username = await sessionStorageService.GetItemAsync<string>("username");
+            var currentUser = await sessionStorageService.GetItemAsync<string>("user");
 
             ClaimsIdentity identity;
 
-            if (username != null)
+            if (currentUser != null)
             {
                 identity = new ClaimsIdentity(new[]
                 {
-                    new Claim(ClaimTypes.Name, username),
+                    new Claim(ClaimTypes.Name, currentUser),
                 }, "apiauth_type");
             }
             else
@@ -40,27 +41,48 @@ namespace TravelManagerFE.Data
             return await Task.FromResult(new AuthenticationState(user));
         }
 
-        public void MarkUserAsAuthenticated(string username)
+        public void MarkUserAsAuthenticated(User user)
         {
+            var userSerialized = JsonConvert.SerializeObject(user);
+
             var identity = new ClaimsIdentity(new[]
             {
-                new Claim(ClaimTypes.Name, username),
+                new Claim(ClaimTypes.Name, userSerialized),
             }, "apiauth_type");
 
-            var user = new ClaimsPrincipal(identity);
+            var newUser = new ClaimsPrincipal(identity);
 
-            NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(user)));
+            NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(newUser)));
         }
 
         public async Task MarkUserAsLoggedOut()
         {
-            await sessionStorageService.RemoveItemAsync("username");
+            await sessionStorageService.RemoveItemAsync("user");
 
             var identity = new ClaimsIdentity();
 
             var user = new ClaimsPrincipal(identity);
 
             NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(user)));
+
+            var serializedUser = JsonConvert.SerializeObject(user);
+            await sessionStorageService.SetItemAsync("user", serializedUser);
+
+        }
+
+        public async Task<User> GetCurrentUser()
+        {
+            try
+            {
+                var user = await sessionStorageService.GetItemAsync<string>("user");
+                var deserializedUser = JsonConvert.DeserializeObject<User>(user);
+
+                return deserializedUser;
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
         }
     }
 }

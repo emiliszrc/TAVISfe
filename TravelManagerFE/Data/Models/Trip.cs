@@ -11,5 +11,6 @@ namespace TravelManagerFE.Data
         public List<Destination> Destinations { get; set; }
         public string Type { get; set; }
         public string Cost { get; set; }
+        public User Creator { get; set; }
     }
 }

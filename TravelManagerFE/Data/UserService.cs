@@ -26,7 +26,6 @@ namespace TravelManagerFE.Data
             }
 
             var user = JsonConvert.DeserializeObject<User>(response.Content);
-            //var user = new User(username, password, "0");
             return user;
         }
 
@@ -47,6 +46,25 @@ namespace TravelManagerFE.Data
             }
 
             //var user = JsonConvert.DeserializeObject<User>(response.Content);
+        }
+
+        public async Task<User> GetByUsername(string username)
+        {
+            var client = new RestClient($"https://localhost:44308/api/user/{username}");
+            var request = new RestRequest(Method.GET);
+            request.AddHeader("content-type", "application/json");
+            request.AddQueryParameter(username, username);
+
+            var response = await client.ExecuteAsync(request);
+
+            if (!response.StatusCode.Equals(System.Net.HttpStatusCode.OK))
+            {
+                //throw new TripAdvisorApiException($"Could not retrieve information from TripAdvisor. Response code: {response.StatusCode}");
+            }
+
+            var user = JsonConvert.DeserializeObject<User>(response.Content);
+            //var user = new User(username, password, "0");
+            return user;
         }
     }
 }

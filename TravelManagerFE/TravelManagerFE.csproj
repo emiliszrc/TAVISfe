@@ -6,8 +6,10 @@
 
   <ItemGroup>
     <PackageReference Include="blazor-dragdrop" Version="2.2.0" />
+    <PackageReference Include="Blazored.Modal" Version="5.1.0" />
     <PackageReference Include="Blazored.SessionStorage" Version="1.0.12" />
     <PackageReference Include="BlazorGoogleMaps" Version="0.9.0" />
+    <PackageReference Include="MatBlazor" Version="2.8.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="RestSharp" Version="106.11.7" />
     <PackageReference Include="Syncfusion.Blazor" Version="18.3.0.52" />

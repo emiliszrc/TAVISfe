@@ -1,4 +1,5 @@
 ﻿@using TravelManagerFE.Data
+@using Newtonsoft.Json
 
 @page "/tripList"
 
@@ -15,23 +16,40 @@
         <div>
             @if (trips.Any())
             {
-                <table>
-                    <tr>
-                        <th>Title</th>
-                        <th>Type</th>
-                        <th>Cost</th>
-                        <th></th>
-                    </tr>
-                    @foreach (var trip in trips)
-                    {
-                        <tr class="trip-table-row">
-                            <td>@trip.Title</td>
-                            <td>@trip.Type</td>
-                            <td>@trip.Cost</td>
-                            <td><button @onclick="@(() => GetDetails(trip))">Details</button></td>
+                
+                @if (currentUser != null)
+                {
+                    <table>
+                        <tr>
+                            <th>Title</th>
+                            <th>Type</th>
+                            <th>Cost</th>
+                            <th></th>
                         </tr>
-                    }
-                </table>
+                        @foreach (var trip in trips.Where(t => t.Creator.Id == currentUser.Id))
+                        {
+                            <tr class="trip-table-row">
+                                <td>@trip.Title</td>
+                                <td>@trip.Type</td>
+                                <td>@trip.Cost</td>
+                                <td><button @onclick="@(() => GetDetails(trip))">Details</button></td>
+                            </tr>
+                        }
+                    </table>
+
+                    @*<b>Organisation trips</b>
+                    <table>
+                        @foreach (var trip in trips.Where(t => t.Creator.Id != currentUser.Id))
+                        {
+                            <tr class="trip-table-row">
+                                <td>@trip.Title</td>
+                                <td>@trip.Type</td>
+                                <td>@trip.Cost</td>
+                                <td><button @onclick="@(() => GetDetails(trip))">Details</button></td>
+                            </tr>
+                        }
+                    </table>*@
+                }
             }
         </div>
     </Authorized>
@@ -40,14 +58,20 @@
     </NotAuthorized>
 </AuthorizeView>
 
+@inject AuthenticationStateProvider AuthenticationStateProvider;
+@inject Blazored.SessionStorage.ISessionStorageService SessionStorage
 
 @code {
     private List<Trip> trips = new List<Trip>();
+    private User currentUser;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        base.OnInitialized();
+        await base.OnInitializedAsync();
         trips = TripService.GetTrips();
+
+        var user = await SessionStorage.GetItemAsync<string>("user");
+        currentUser = JsonConvert.DeserializeObject<User>(user);
     }
 
     private void GetDetails(Trip trip)

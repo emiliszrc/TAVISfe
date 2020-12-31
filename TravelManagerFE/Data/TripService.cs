@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using RestSharp;
+using TravelManagerFE.Data.Models;
 
 namespace TravelManagerFE.Data
 {
@@ -100,6 +101,63 @@ namespace TravelManagerFE.Data
             var tripResponse = JsonConvert.DeserializeObject<Trip>(response.Content);
 
             return tripResponse;
+        }
+
+        public Review CreateReview(ReviewRequest reviewRequest)
+        {
+            var client = new RestClient($"https://localhost:44308/api/Trips/{reviewRequest.TripId}/Reviews");
+            var request = new RestRequest(Method.POST);
+            request.AddHeader("content-type", "application/json");
+            request.AddJsonBody(reviewRequest);
+
+            var response = client.Execute(request);
+
+            if (!response.StatusCode.Equals(System.Net.HttpStatusCode.OK))
+            {
+                //throw new TripAdvisorApiException($"Could not retrieve information from TripAdvisor. Response code: {response.StatusCode}");
+            }
+
+            var reviewResponse = JsonConvert.DeserializeObject<Review>(response.Content);
+
+            return reviewResponse;
+        }
+
+        public Review PostComment(string reviewId, string tripId, CommentRequest commentRequest)
+        {
+            var client = new RestClient($"https://localhost:44308/api/Trips/{tripId}/Reviews/{reviewId}/Comments");
+            var request = new RestRequest(Method.POST);
+            request.AddHeader("content-type", "application/json");
+            request.AddJsonBody(commentRequest);
+
+            var response = client.Execute(request);
+
+            if (!response.StatusCode.Equals(System.Net.HttpStatusCode.OK))
+            {
+                //throw new TripAdvisorApiException($"Could not retrieve information from TripAdvisor. Response code: {response.StatusCode}");
+            }
+
+            var reviewResponse = JsonConvert.DeserializeObject<Review>(response.Content);
+
+            return reviewResponse;
+        }
+
+        public List<Review> GetReviewBy(string id, string currentUserId)
+        {
+            var client = new RestClient($"https://localhost:44308/api/Trips/{id}/Reviews/ByUser");
+            var request = new RestRequest(Method.GET);
+            request.AddHeader("content-type", "application/json");
+            request.AddQueryParameter("userId", currentUserId);
+
+            var response = client.Execute(request);
+
+            if (!response.StatusCode.Equals(System.Net.HttpStatusCode.OK))
+            {
+                //throw new TripAdvisorApiException($"Could not retrieve information from TripAdvisor. Response code: {response.StatusCode}");
+            }
+
+            var reviewResponse = JsonConvert.DeserializeObject<List<Review>>(response.Content);
+
+            return reviewResponse;
         }
     }
 }
