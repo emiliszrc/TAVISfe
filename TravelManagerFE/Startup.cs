@@ -4,6 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Blazored.Modal;
 using Blazored.SessionStorage;
+using Blazorise;
+using Blazorise.Bootstrap;
+using Blazorise.Icons.FontAwesome;
 using MatBlazor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
@@ -14,7 +17,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Plk.Blazor.DragDrop;
-using Syncfusion.Blazor;
 using TravelManagerFE.Data;
 
 namespace TravelManagerFE
@@ -41,10 +43,20 @@ namespace TravelManagerFE
             services.AddBlazoredSessionStorage();
             services.AddMatBlazor();
             services.AddBlazoredModal();
+            services.AddBlazorise(options => { options.ChangeTextOnKeyPress = true; });
 
             services.AddBlazorDragDrop();
             services.AddServerSideBlazor().AddHubOptions(config => config.MaximumReceiveMessageSize = 100048576);
             services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
+            services
+                .AddBlazorise(options =>
+                {
+                    options.ChangeTextOnKeyPress = true; // optional
+                })
+                .AddBootstrapProviders()
+                .AddFontAwesomeIcons();
+            var componentMapper = new ComponentMapper(); 
+            services.AddSingleton<IComponentMapper>(componentMapper);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -68,6 +80,10 @@ namespace TravelManagerFE
 
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.ApplicationServices
+                .UseBootstrapProviders()
+                .UseFontAwesomeIcons();
 
             app.UseEndpoints(endpoints =>
             {

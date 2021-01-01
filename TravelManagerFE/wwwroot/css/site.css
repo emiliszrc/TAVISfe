@@ -24,6 +24,7 @@ app {
     height: 3.5rem;
     display: flex;
     align-items: center;
+    z-index: 2000;
 }
 
 .main {
@@ -287,4 +288,19 @@ tr:nth-child(even) {
     flex-wrap: wrap;
     justify-content: left;
     padding: 15px;
+}
+
+.demo-mat-card {
+    width: auto;
+    height: auto;
+    min-height: 100px;
+    min-width: 300px;
+}
+
+.demo-mat-card-content {
+    padding: 1rem;
+}
+
+.demo-mat-card-clean-margin {
+    margin: 0px;
 }

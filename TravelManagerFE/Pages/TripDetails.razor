@@ -1,6 +1,7 @@
 ﻿@using TravelManagerFE.Data
 @using TravelManagerFE.Pages
 @using Plk.Blazor.DragDrop
+@using TravelManagerFE.Data.Models
 
 @page "/tripDetails/{id}"
 
@@ -39,8 +40,8 @@
 
 <button @onclick="DisplayDestinationSearch">Search for destinations</button>
 
-<Dropzone Items="trip.Destinations">
-    <div>@context.Title</div>
+<Dropzone Items="trip.Visits">
+    <div>@context.Location.Title</div>
 </Dropzone>
 <div>
     <button @onclick="SaveDestinationOrder">Save destination order</button>
@@ -81,12 +82,22 @@
         base.OnInitialized();
         DestinationSearchShown = false;
         trip = TripService.GetTrip(Id);
-        trip.Destinations = trip.Destinations.OrderBy(destination => destination.Index).ToList();
+        trip.Visits = trip.Visits.OrderBy(destination => destination.VisitationIndex).ToList();
     }
 
-    void ClickHandler(Destination destination)
+    void ClickHandler(Location location)
     {
-        trip = TripService.AddDestinationToTrip(trip.Id, destination);
+        var locationResult = TripService.AddLocation(trip.Id, location);
+
+        var visit = new VisitRequest
+        {
+            Arrival = destinationRequest.Arrival,
+            Departure = destinationRequest.Departure,
+            LocationId = locationResult.Id,
+            TripId = trip.Id
+        };
+
+        trip = TripService.AddDestinationToTrip(visit);
     }
 
     private void DisplayDestinationSearch() => DestinationSearchShown = !DestinationSearchShown;
@@ -94,9 +105,9 @@
 
     private void SaveDestinationOrder()
     {
-        foreach (var tripDestination in trip.Destinations)
+        foreach (var tripDestination in trip.Visits)
         {
-            tripDestination.Index = trip.Destinations.IndexOf(tripDestination).ToString();
+            tripDestination.VisitationIndex = trip.Visits.IndexOf(tripDestination).ToString();
         }
 
         TripService.ReorderTripDestinations(trip);

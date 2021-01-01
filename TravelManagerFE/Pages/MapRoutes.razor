@@ -67,11 +67,11 @@
 
     private async Task mapCurrentTrip()
     {
-        var waypoints = trip.Destinations.Select(destination =>
+        var waypoints = trip.Visits.Select(destination =>
             new DirectionsWaypoint()
             {
-                Location = new LatLngLiteral(Convert.ToDouble(destination.Longtitude.Replace('.', ',')),
-                    Convert.ToDouble(destination.Latitude.Replace('.', ','))),
+                Location = new LatLngLiteral(Convert.ToDouble(destination.Location.Longtitude.Replace('.', ',')),
+                    Convert.ToDouble(destination.Location.Latitude.Replace('.', ','))),
                 Stopover = true
             }).ToList();
 

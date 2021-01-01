@@ -1,6 +1,6 @@
 ﻿namespace TravelManagerFE.Data
 {
-    public class Destination
+    public class Location
     {
         public string Id { get; set; }
 

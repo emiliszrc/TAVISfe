@@ -11,6 +11,12 @@ namespace TravelManagerFE.Data.Models
 
         public string Text { get; set; }
 
-        public string DestinationIndex { get; set; }
+        public Visit Visit { get; set; }
+
+        public User Creator { get; set; }
+
+        public Comment ParentComment { get; set; }
+
+        public List<Comment> ChildComments { get; set; }
     }
 }

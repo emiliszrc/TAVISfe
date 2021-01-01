@@ -1,40 +1,48 @@
 ﻿<h3>Review</h3>
 
-<h4>@Trip.Destinations.Count() destinations</h4>
+<h4>@Trip.Visits.Count() destinations</h4>
 
 
 <MatAccordion>
-    @foreach (var destination in Trip.Destinations)
+    @foreach (var visit in Trip.Visits)
     {
         <MatExpansionPanel>
             <MatExpansionPanelSummary>
                 <MatExpansionPanelHeader>
-                    @destination.Title
+                    @visit.Location.Title
                 </MatExpansionPanelHeader>
-                @if (CurrentReview != null && CurrentReview.Comments.Any(cm => cm.DestinationIndex == destination.Index))
+                @if (CurrentReview != null && Trip.Reviews.Any(r => r.Comments.Any(c => c.Visit.Id == visit.Id)))
                 {
                     <MatExpansionPanelSubHeader>
-                        @CurrentReview.Comments.Where(cm => cm.DestinationIndex == destination.Index).Count() comments
+                        @GetTripDestinationComments(visit.Id).Count comments
                     </MatExpansionPanelSubHeader>
                 }
             </MatExpansionPanelSummary>
             <MatExpansionPanelDetails>
                 @if (CurrentReview != null)
                 {
-                    <MatList SingleSelection="true">
-                        @foreach (var comment in CurrentReview.Comments.Where(cm => cm.DestinationIndex == destination.Index))
+                    <MatList SingleSelection="true" Style="height:auto;min-height:200px;">
+                        @foreach (var comment in GetTripDestinationComments(visit.Id))
                         {
-                            <MatListItem>
-                                <p>@comment.Text</p>
-                                <p>@*@comment.Creator*@</p>
+                            <MatListItem Style="height:auto;padding: 1rem;">
+                                <MatCard class="demo-mat-card">
+                                    <MatCardContent>
+                                        <MatBody2 class="demo-mat-card-content demo-mat-card-clean-margin">
+                                            @comment.Text
+                                        </MatBody2>
+                                        <div class="demo-mat-card-content">
+                                            <MatSubtitle2 class="demo-mat-card-clean-margin">
+                                                @comment.Creator.Username
+                                            </MatSubtitle2>
+                                        </div>
+                                    </MatCardContent>
+                                </MatCard>
                             </MatListItem>
                         }
-
                     </MatList>
                 }
                 <p>
-
-                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-2"><MatButton @onclick="@(() => PostComment(destination))"> Post comment </MatButton></div>
+                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-2"><MatButton @onclick="@(() => PostComment(visit))"> Post comment </MatButton></div>
                 </p>
             </MatExpansionPanelDetails>
         </MatExpansionPanel>
@@ -44,8 +52,8 @@
 @page "/review/{id}"
 @using Newtonsoft.Json
 @using Microsoft.AspNetCore.Mvc.ModelBinding
-@using Syncfusion.Blazor.Kanban
 @using TravelManagerFE.Data.Models
+@using System.Threading
 
 @inject TripService TripService
 @inject Blazored.SessionStorage.ISessionStorageService SessionStorage
@@ -57,6 +65,8 @@
     public Trip Trip { get; set; }
     public User CurrentUser { get; set; }
     public Data.Models.Review CurrentReview { get; set; }
+    IList<Comment> ExpandedNodes = new List<Comment>();
+    Comment selectedNode;
 
     [CascadingParameter] public IModalService Modal { get; set; }
 
@@ -77,36 +87,57 @@
             UserId = CurrentUser.Id
         };
 
-        var reviewsByUserId = TripService.GetReviewBy(Id, CurrentUser.Id);
+        var reviews = TripService.GetReviewBy(Id);
 
-        var review = reviewsByUserId.FirstOrDefault(r => r.ApprovalStatus == "not approved");
+        Trip.Reviews = reviews;
 
-        CurrentReview = review == null ? TripService.CreateReview(reviewRequest) : review;
+        var currentUserReview = reviews.FirstOrDefault(r => r.User.Id == CurrentUser.Id);
+
+        CurrentReview = currentUserReview == null ? TripService.CreateReview(reviewRequest) : currentUserReview;
     }
 
 
 
-    private async void PostComment(Destination destination)
+    private async void PostComment(Visit visit)
     {
         var parameters = new ModalParameters();
-        parameters.Add(nameof(destination), destination);
+        parameters.Add(nameof(visit), visit);
         var formModal = Modal.Show<CreateComment>("Add comment", parameters);
         var result = await formModal.Result;
+        if (result.Data == null)
+        {
+            return;
+        }
         var comment = result.Data.ToString();
         var commentRequest = new CommentRequest
         {
-            DestinationIndex = destination.Index,
+            VisitId = visit.Id,
             ReviewId = CurrentReview.Id,
             Text = comment
         };
 
         CurrentReview = TripService.PostComment(CurrentReview.Id, Trip.Id, commentRequest);
 
-        InvokeAsync(() =>
-        {
+        var reviews = TripService.GetReviewBy(Id);
 
-            StateHasChanged();
-        });
+        Trip.Reviews = reviews;
+
+        this.StateHasChanged();
     }
 
+    private List<Comment> GetTripDestinationComments(string visitId)
+    {
+        var commentList = new List<Comment>();
+
+        foreach (var review in Trip.Reviews)
+        {
+            foreach (var comment in review.Comments.Where(comment => comment.Visit.Id== visitId))
+            {
+                comment.Creator = review.User;
+                commentList.Add(comment);
+            }
+        }
+
+        return commentList;
+    }
 }

@@ -35,14 +35,14 @@
 </div>
 
 @code {
-    private List<Destination> destinations = new List<Destination>();
+    private List<Location> destinations = new List<Location>();
 
     private string query;
 
     private bool tripViewEnabled { get; set; }
 
     [Parameter] 
-    public EventCallback<Destination> OnClick { get; set; }
+    public EventCallback<Location> OnClick { get; set; }
 
     protected override void OnInitialized()
     {

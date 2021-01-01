@@ -44,14 +44,12 @@ namespace TravelManagerFE.Data
             return trip;
         }
 
-        public Trip AddDestinationToTrip(string tripId, Destination destination)
+        public Trip AddDestinationToTrip(VisitRequest visitRequest)
         {
-            var destinationRequest = DestinationRequest.From(destination);
-
-            var client = new RestClient($"https://localhost:44308/api/trips/{tripId}/Destinations");
+            var client = new RestClient($"https://localhost:44308/api/trips/{visitRequest.TripId}/Visits");
             var request = new RestRequest(Method.POST);
             request.AddHeader("content-type", "application/json");
-            request.AddJsonBody(destinationRequest);
+            request.AddJsonBody(visitRequest);
 
             var response = client.Execute(request);
 
@@ -89,7 +87,7 @@ namespace TravelManagerFE.Data
             var client = new RestClient($"https://localhost:44308/api/trips/{trip.Id}/Destinations/Reorder");
             var request = new RestRequest(Method.POST);
             request.AddHeader("content-type", "application/json");
-            request.AddJsonBody(trip.Destinations);
+            request.AddJsonBody(trip.Visits);
 
             var response = client.Execute(request);
 
@@ -158,6 +156,43 @@ namespace TravelManagerFE.Data
             var reviewResponse = JsonConvert.DeserializeObject<List<Review>>(response.Content);
 
             return reviewResponse;
+        }
+
+        public List<Review> GetReviewBy(string id)
+        {
+            var client = new RestClient($"https://localhost:44308/api/Trips/{id}/Reviews/");
+            var request = new RestRequest(Method.GET);
+            request.AddHeader("content-type", "application/json");
+
+            var response = client.Execute(request);
+
+            if (!response.StatusCode.Equals(System.Net.HttpStatusCode.OK))
+            {
+                //throw new TripAdvisorApiException($"Could not retrieve information from TripAdvisor. Response code: {response.StatusCode}");
+            }
+
+            var reviewResponse = JsonConvert.DeserializeObject<List<Review>>(response.Content);
+
+            return reviewResponse;
+        }
+
+        public Location AddLocation(string tripId, Location location)
+        {
+            var client = new RestClient($"https://localhost:44308/api/trips/Locations");
+            var request = new RestRequest(Method.POST);
+            request.AddHeader("content-type", "application/json");
+            request.AddJsonBody(location);
+
+            var response = client.Execute(request);
+
+            if (!response.StatusCode.Equals(System.Net.HttpStatusCode.OK))
+            {
+                //throw new TripAdvisorApiException($"Could not retrieve information from TripAdvisor. Response code: {response.StatusCode}");
+            }
+
+            var locationResponse = JsonConvert.DeserializeObject<Location>(response.Content);
+
+            return locationResponse;
         }
     }
 }
