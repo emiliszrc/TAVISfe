@@ -11,6 +11,8 @@ namespace TravelManagerFE.Data.Models
 
         public string Text { get; set; }
 
+        public DateTime CreatedDate { get; set; }
+
         public Visit Visit { get; set; }
 
         public User Creator { get; set; }

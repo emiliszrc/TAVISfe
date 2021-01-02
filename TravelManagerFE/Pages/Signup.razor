@@ -10,10 +10,16 @@
                 </div>
             </span>
             <div class="login-input-field">
-                <input class="login-input" placeholder="username" @bind="username"/>
+                <input class="login-input" placeholder="username" @bind="username" />
             </div>
             <div class="login-input-field">
-                <input class="login-input" placeholder="password" @bind="password"/>
+                <input class="login-input" placeholder="password" @bind="password" />
+            </div>
+            <div class="login-input-field">
+                <input class="login-input" placeholder="name" @bind="name" />
+            </div>
+            <div class="login-input-field">
+                <input class="login-input" placeholder="surname" @bind="surname" />
             </div>
             <div class="login-input-dropdown">
                 <select class="form-control selectpicker" @bind="ddlIndex">
@@ -40,6 +46,8 @@
 @code {
     public string username;
     public string password;
+    public string name;
+    public string surname;
     List<Organisation> organisations = new List<Organisation>();
     private string ddlIndex { get; set; } = "";
 
@@ -50,7 +58,7 @@
 
     public void SignupUser()
     {
-        userService.CreateUser(username, password, ddlIndex);
+        userService.CreateUser(username, password, name, surname, ddlIndex);
         NavigationManager.NavigateTo("/");
     }
 }

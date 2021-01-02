@@ -29,9 +29,9 @@ namespace TravelManagerFE.Data
             return user;
         }
 
-        public async void CreateUser(string username, string password, string ddlIndex)
+        public async void CreateUser(string username, string password, string name, string surname, string ddlIndex)
         {
-            var user = new User(username, password, ddlIndex);
+            var user = new User(username, password, name, surname, ddlIndex);
 
             var client = new RestClient($"https://localhost:44308/api/user");
             var request = new RestRequest(Method.POST);
