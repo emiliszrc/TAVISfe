@@ -17,38 +17,58 @@
 </div>
 <br />
 <br />
-<EditForm Model="@destinationRequest">
-    <div class="body-limiter">
-        <div class="wrap-login">
-            <label class="login-input">
-                Arrival:
-                <InputDate class="login-input-field" id="arrival" @bind-Value="destinationRequest.Arrival" />
-            </label>
-            
 
-            <label class="login-input">
-                Departure:
-                <InputDate class="login-input-field" id="departure" @bind-Value="destinationRequest.Departure" />
-            </label>
-            <label>
-                Price per person:
-                <InputNumber class="login-input-field" id="price" @bind-Value="destinationRequest.PricePerPerson" />
-            </label>
+@*<EditForm Model="@destinationRequest">
+        <div class="body-limiter">
+            <div class="wrap-login">
+                <label class="login-input">
+                    Arrival:
+                    <InputDate class="login-input-field" id="arrival" @bind-Value="destinationRequest.Arrival" />
+                </label>
+
+
+                <label class="login-input">
+                    Departure:
+                    <InputDate class="login-input-field" id="departure" @bind-Value="destinationRequest.Departure" />
+                </label>
+                <label>
+                    Price per person:
+                    <InputNumber class="login-input-field" id="price" @bind-Value="destinationRequest.PricePerPerson" />
+                </label>
+            </div>
+        </div>
+    </EditForm>*@
+<Dropzone Items="trip.Visits" Class="plk-dd-dropzone-visits">
+    <div class="mat-layout-grid mat-layout-grid-align-left" style="max-width: 800px;">
+        <div class="mat-layout-grid-inner">
+            <div class="mat-layout-grid-cell">
+                <span>@context.Location.Title</span>
+            </div>
+            <div class="mat-layout-grid-cell"></div>
+            <div class="mat-layout-grid-cell">
+                <MatButton @onclick="@(() => OpenVisitEdit(@context))" class="btn btn-secondary m-1">
+                    Edit
+                    <span class="material-icons">
+                        edit
+                    </span>
+                </MatButton>
+            </div>
         </div>
     </div>
-</EditForm>
-
-<button @onclick="DisplayDestinationSearch">Search for destinations</button>
-
-<Dropzone Items="trip.Visits">
-    <div>@context.Location.Title</div>
+    <MatDivider></MatDivider>
 </Dropzone>
-<div>
-    <button @onclick="SaveDestinationOrder">Save destination order</button>
+<div class="mat-layout-grid mat-layout-grid-align-left" style="max-width: 800px;">
+    <div class="mat-layout-grid-inner">
+        <div class="mat-layout-grid-cell">
+            <MatButton @onclick="SaveDestinationOrder">Save destination order</MatButton>
+        </div>
+        <div class="mat-layout-grid-cell">
+            <MatButton @onclick="DisplayMapRoutes">Show On Map</MatButton>
+        </div>
+    </div>
 </div>
-<br />
-<br />
-<button @onclick="DisplayMapRoutes">Show On Map</button>
+
+<MatButton @onclick="DisplayDestinationSearch">Add new visit</MatButton>
 
 @if (DestinationSearchShown)
 {
@@ -57,7 +77,7 @@
 
 @if (MapRoutesShown)
 {
-<MapRoutes Trip = "@trip"/>
+    <MapRoutes Trip="@trip" />
 }
 
 @code {
@@ -100,7 +120,11 @@
         trip = TripService.AddDestinationToTrip(visit);
     }
 
-    private void DisplayDestinationSearch() => DestinationSearchShown = !DestinationSearchShown;
+    //private void DisplayDestinationSearch() => DestinationSearchShown = !DestinationSearchShown;
+    private void DisplayDestinationSearch()
+    {
+        NavigationManager.NavigateTo($"tripDetails/{trip.Id}/addVisit");
+    }
     private void DisplayMapRoutes() => MapRoutesShown = !MapRoutesShown;
 
     private void SaveDestinationOrder()
@@ -113,5 +137,10 @@
         TripService.ReorderTripDestinations(trip);
     }
 
+
+    private void OpenVisitEdit(Visit context)
+    {
+        throw new NotImplementedException();
+    }
 
 }

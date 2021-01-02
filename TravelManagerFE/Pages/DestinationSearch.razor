@@ -1,4 +1,17 @@
 ﻿@using TravelManagerFE.Data
+@using BlazorTable
+@using System.Collections.Generic
+@using System.Threading.Tasks
+@using Microsoft.AspNetCore.Components
+@using TravelManagerFE.Data
+@using System.Collections.Generic
+@using System.Threading.Tasks
+@using Microsoft.AspNetCore.Components
+@using TravelManagerFE.Data
+@using System.Collections.Generic
+@using System.Threading.Tasks
+@using Microsoft.AspNetCore.Components
+@using TravelManagerFE.Data
 
 @page "/destinationsearch"
 
@@ -6,20 +19,23 @@
 
 @inject SearchService SearchService
 
+
 <div>
     <input placeholder="location" @bind="query" />
     <button @onclick="SearchForDestinations">Search</button>
 </div>
 <div>
-    @if (destinations.Any())
+
+</div>
+    @if (locations.Any())
     {
-        <table>
+        @*<table>
             <tr>
                 <th>Title</th>
                 <th>Type</th>
                 <th>Address</th>
             </tr>
-            @foreach (var destination in destinations)
+            @foreach (var destination in locations)
             {
                 <tr>
                     <td>@destination.Title</td>
@@ -30,18 +46,23 @@
                     </td>
                 </tr>
             }
-        </table>
+        </table>*@
+        <Table TableItem="Location" Items="locations" PageSize="15" RowClickAction="RowClick">
+            <Column TableItem="Location" Title="Id" Field="@(x => x.Title)" Sortable="true" Filterable="true" Width="10%" />
+            <Column TableItem="Location" Title="First Name" Field="@(x => x.Type)" Sortable="true" Filterable="true" Width="20%" />
+            <Column TableItem="Location" Title="Last Name" Field="@(x => x.Address)" Sortable="true" Filterable="true" Width="20%" />
+            <Pager ShowPageNumber="true" ShowTotalCount="true" />
+        </Table>
     }
-</div>
 
 @code {
-    private List<Location> destinations = new List<Location>();
+    private List<Location> locations = new List<Location>();
 
     private string query;
 
     private bool tripViewEnabled { get; set; }
 
-    [Parameter] 
+    [Parameter]
     public EventCallback<Location> OnClick { get; set; }
 
     protected override void OnInitialized()
@@ -52,7 +73,12 @@
 
     private async Task SearchForDestinations()
     {
-        destinations = await SearchService.SearchForDestinations(query);
+        locations = await SearchService.SearchForDestinations(query);
+    }
+
+    private void RowClick(Location location)
+    {
+        OnClick.InvokeAsync(location);
     }
 
     private void DisplayTrips() => tripViewEnabled = !tripViewEnabled;

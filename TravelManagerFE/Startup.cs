@@ -7,6 +7,7 @@ using Blazored.SessionStorage;
 using Blazorise;
 using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
+using BlazorTable;
 using MatBlazor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
@@ -44,6 +45,7 @@ namespace TravelManagerFE
             services.AddMatBlazor();
             services.AddBlazoredModal();
             services.AddBlazorise(options => { options.ChangeTextOnKeyPress = true; });
+            services.AddBlazorTable();
 
             services.AddBlazorDragDrop();
             services.AddServerSideBlazor().AddHubOptions(config => config.MaximumReceiveMessageSize = 100048576);

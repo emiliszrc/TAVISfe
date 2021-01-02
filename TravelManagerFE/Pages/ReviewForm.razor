@@ -2,7 +2,11 @@
 
 <h4>@Trip.Visits.Count() destinations</h4>
 
-
+<MatVirtualScroll style="height: 300px; overflow: scroll; overflow-x: hidden;" ItemType="Visit" Items="@Trip.Visits" ItemHeight="50" Disabled="true">
+    <ItemTemplate>
+        <div>@context.Location.Title</div>
+    </ItemTemplate>
+</MatVirtualScroll>
 <MatAccordion>
     @foreach (var visit in Trip.Visits)
     {

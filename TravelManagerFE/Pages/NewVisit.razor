@@ -1,0 +1,86 @@
+﻿@using TravelManagerFE.Data.Models
+<h3>New Visit</h3>
+@page "/tripDetails/{id}/addVisit"
+
+@*Title = location.Title,
+    Type = location.Type,
+    LocationId = location.LocationId,
+    Address = location.Address,
+    Latitude = location.Latitude,
+    Longtitude = location.Longtitude*@
+
+<div class="mat-layout-grid mat-layout-grid-align-left" style="max-width: 800px;">
+    <div class="mat-layout-grid-inner">
+        <div class="mat-layout-grid-cell">
+            <EditForm Model="LocationRequest">
+                <p>
+                    <MatTextField @bind-Value="LocationRequest.Title" HelperText="Helper Text" Label="Title"></MatTextField>
+                </p>
+                <p>
+                    <MatSelect HelperText="Helper Text Persistent" HelperTextPersistent="true" Label="Pick the type of the trip" @bind-Value="@LocationRequest.Type">
+                        <MatOptionString></MatOptionString>
+                        <MatOptionString Value="geos">Geographical object</MatOptionString>
+                        <MatOptionString Value="lodging">Lodging</MatOptionString>
+                        <MatOptionString Value="thingsToDo">Things to do</MatOptionString>
+                    </MatSelect>
+                </p>
+                <p>
+                    <MatTextField @bind-Value="LocationRequest.Address" HelperText="Helper Text" Label="Address"></MatTextField>
+                </p>
+                <p>
+                    <MatTextField @bind-Value="LocationRequest.Latitude" HelperText="Helper Text" Label="Latitude"></MatTextField>
+                </p>
+                <p>
+                    <MatTextField @bind-Value="LocationRequest.Longtitude" HelperText="Helper Text" Label="Longtitude"></MatTextField>
+                </p>
+            </EditForm>
+            <MatButton @onclick="DisplayDestinationSearch">Search for location</MatButton>
+        </div>
+        <div class="mat-layout-grid-cell">
+            <EditForm Model="VisitRequest">
+                <MatDatePicker @bind-Value="VisitRequest.Arrival" HelperText="Arrival" EnableTime="true" Enable24hours="true"></MatDatePicker>
+                <MatDatePicker @bind-Value="VisitRequest.Departure" HelperText="Departure" EnableTime="true" Enable24hours="true"></MatDatePicker>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+    @if (DestinationSearchShown)
+    {
+        <DestinationSearch OnClick="ClickHandler"></DestinationSearch>
+    }
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+    public Visit Visit { get; set; } = new Visit();
+    public VisitRequest VisitRequest { get; set; } = new VisitRequest();
+    public LocationRequest LocationRequest { get; set; } = new LocationRequest();
+
+    private bool DestinationSearchShown { get; set; }
+
+    private void DisplayDestinationSearch() => DestinationSearchShown = !DestinationSearchShown;
+    const string geos = "geos";
+    const string lodging = "lodging";
+    const string thingsToDo = "things_to_do";
+
+
+
+
+    void ClickHandler(Location location)
+    {
+        //var locationResult = TripService.AddLocation(trip.Id, location);
+
+        //var visit = new VisitRequest
+        //{
+        //    Arrival = destinationRequest.Arrival,
+        //    Departure = destinationRequest.Departure,
+        //    LocationId = locationResult.Id,
+        //    TripId = trip.Id
+        //};
+
+        //trip = TripService.AddDestinationToTrip(visit);
+
+        LocationRequest = LocationRequest.From(location);
+    }
+}

@@ -304,3 +304,13 @@ tr:nth-child(even) {
 .demo-mat-card-clean-margin {
     margin: 0px;
 }
+
+.plk-dd-dropzone-visits {
+    height: 300px; 
+    overflow: scroll; 
+    overflow-x: hidden;
+}
+
+.plk-dd-dropzone-visits::-webkit-scrollbar {
+    display: none;
+}
