@@ -1,17 +1,93 @@
 ﻿<h3>Review</h3>
+<div class="mat-layout-grid">
+<div class="mat-layout-grid-inner">
+    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-5">
+        <h4>@Trip.Visits.Count() destination(s)</h4>
+        <MatAccordion>
+            <MatList style="height: 300px; overflow: scroll; overflow-x: hidden;" TwoLine="true">
+                @foreach (var visit in Trip.Visits)
+                {
+                    <MatListItem OnClick="@(e => PopulateReview(e, visit))">
+                        <MatListItemText>
+                            <MatListItemPrimaryText>
+                                @visit.Location.Title
+                            </MatListItemPrimaryText>
+                            <MatListItemSecondaryText>
+                                @GetTripDestinationComments(visit.Id).Count comment(s)
+                            </MatListItemSecondaryText>
+                        </MatListItemText>
+                    </MatListItem>
+                    <MatDivider></MatDivider>
+                }
+            </MatList>
+        </MatAccordion>
+    </div>
+    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-5">
+    @if (ReviewingVisit != null)
+    {
+        <div class="mat-layout-grid-inner">
+            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-7">
 
-<h4>@Trip.Visits.Count() destinations</h4>
+                <EditForm Model="ReviewingVisit.Location">
+                    <p>
+                        <MatTextField @bind-Value="ReviewingVisit.Location.Title" TextArea="true" Style="width: 130px; pointer-events: none;" HelperText="Helper Text" Label="Title"></MatTextField>
+                    </p>
+                    <p>
+                        <MatSelect HelperText="Helper Text Persistent" Label="Pick the type of the trip" Style="pointer-events: none;"@bind-Value="@ReviewingVisit.Location.Type">
+                            <MatOptionString></MatOptionString>
+                            <MatOptionString Value="geos">Geographical object</MatOptionString>
+                            <MatOptionString Value="lodging">Lodging</MatOptionString>
+                            <MatOptionString Value="things_to_do">Things to do</MatOptionString>
+                        </MatSelect>
+                    </p>
+                    <p>
+                        <MatTextField @bind-Value="ReviewingVisit.Location.Address" TextArea="true" HelperText="Helper Text" Label="Address" Style="height: 130px;pointer-events: none;"></MatTextField>
+                    </p>
+                    <p>
+                        <MatTextField @bind-Value="ReviewingVisit.Location.Latitude" Style="pointer-events: none;" HelperText="Helper Text" Label="Latitude"></MatTextField>
+                    </p>
+                    <p>
+                        <MatTextField @bind-Value="ReviewingVisit.Location.Longtitude" Style="pointer-events: none;" HelperText="Helper Text" Label="Longtitude"></MatTextField>
+                    </p>
+                </EditForm>
+            </div>
+            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-5">
 
-<MatVirtualScroll style="height: 300px; overflow: scroll; overflow-x: hidden;" ItemType="Visit" Items="@Trip.Visits" ItemHeight="50" Disabled="true">
-    <ItemTemplate>
-        <div>@context.Location.Title</div>
-    </ItemTemplate>
-</MatVirtualScroll>
-<MatAccordion>
+                <EditForm Model="ReviewingVisit">
+                    <p>
+                        <MatTextField @bind-Value="ReviewingVisit.Arrival" Style="pointer-events: none;" HelperText="Helper Text" Label="Arrival"></MatTextField>
+                    </p>
+                    <p>
+                        <MatTextField @bind-Value="ReviewingVisit.Departure" Style="pointer-events: none;" HelperText="Helper Text" Label="Departure"></MatTextField>
+                    </p>
+                </EditForm>
+            </div>
+        </div>
+    }
+    </div>
+</div>
+</div>
+@*<MatAccordion>
+    <MatList style="height: 300px; overflow: scroll; overflow-x: hidden;" TwoLine="true">
+        @foreach (var visit in Trip.Visits)
+        {
+            <MatListItem OnClick="@(e => PopulateReview(e, visit))">
+                <MatListItemText>
+                    <MatListItemPrimaryText>
+                        @visit.Location.Title
+                    </MatListItemPrimaryText>
+                    <MatListItemSecondaryText>
+                        @GetTripDestinationComments(visit.Id).Count comment(s)
+                    </MatListItemSecondaryText>
+                </MatListItemText>
+            </MatListItem>
+            <MatDivider></MatDivider>
+        }
+    </MatList>
     @foreach (var visit in Trip.Visits)
     {
-        <MatExpansionPanel>
-            <MatExpansionPanelSummary>
+        <MatExpansionPanel Style="">
+            @*<MatExpansionPanelSummary>
                 <MatExpansionPanelHeader>
                     @visit.Location.Title
                 </MatExpansionPanelHeader>
@@ -22,36 +98,36 @@
                     </MatExpansionPanelSubHeader>
                 }
             </MatExpansionPanelSummary>
-            <MatExpansionPanelDetails>
-                @if (CurrentReview != null)
-                {
-                    <MatList SingleSelection="true" Style="height:auto;min-height:200px;">
-                        @foreach (var comment in GetTripDestinationComments(visit.Id))
-                        {
-                            <MatListItem Style="height:auto;padding: 1rem;">
-                                <MatCard class="demo-mat-card">
-                                    <MatCardContent>
-                                        <MatBody2 class="demo-mat-card-content demo-mat-card-clean-margin">
-                                            @comment.Text
-                                        </MatBody2>
-                                        <div class="demo-mat-card-content">
-                                            <MatSubtitle2 class="demo-mat-card-clean-margin">
-                                                @comment.Creator.Name @comment.Creator.Surname at @comment.CreatedDate
-                                            </MatSubtitle2>
-                                        </div>
-                                    </MatCardContent>
-                                </MatCard>
-                            </MatListItem>
-                        }
-                    </MatList>
-                }
-                <p>
-                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-2"><MatButton @onclick="@(() => PostComment(visit))"> Post comment </MatButton></div>
-                </p>
-            </MatExpansionPanelDetails>
+<MatExpansionPanelDetails>
+    @if (CurrentReview != null)
+    {
+        <MatList SingleSelection="true" Style="height: auto; min-height: 200px;">
+            @foreach (var comment in GetTripDestinationComments(visit.Id))
+            {
+                <MatListItem Style="height: auto; padding: 1rem;">
+                    <MatCard class="demo-mat-card">
+                        <MatCardContent>
+                            <MatBody2 class="demo-mat-card-content demo-mat-card-clean-margin">
+                                @comment.Text
+                            </MatBody2>
+                            <div class="demo-mat-card-content">
+                                <MatSubtitle2 class="demo-mat-card-clean-margin">
+                                    @comment.Creator.Name @comment.Creator.Surname at @comment.CreatedDate
+                                </MatSubtitle2>
+                            </div>
+                        </MatCardContent>
+                    </MatCard>
+                </MatListItem>
+            }
+        </MatList>
+    }
+    <p>
+        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-2"><MatButton @onclick="@(() => PostComment(visit))"> Post comment </MatButton></div>
+    </p>
+</MatExpansionPanelDetails>
         </MatExpansionPanel>
     }
-</MatAccordion>
+</MatAccordion>*@
 
 @page "/review/{id}"
 @using Newtonsoft.Json
@@ -71,6 +147,7 @@
     public Data.Models.Review CurrentReview { get; set; }
     IList<Comment> ExpandedNodes = new List<Comment>();
     Comment selectedNode;
+    public Visit ReviewingVisit { get; set; }
 
     [CascadingParameter] public IModalService Modal { get; set; }
 
@@ -133,9 +210,14 @@
     {
         var commentList = new List<Comment>();
 
+        if (Trip.Reviews == null)
+        {
+            return commentList;
+        }
+
         foreach (var review in Trip.Reviews)
         {
-            foreach (var comment in review.Comments.Where(comment => comment.Visit.Id== visitId))
+            foreach (var comment in review.Comments.Where(comment => comment.Visit.Id == visitId))
             {
                 comment.Creator = review.User;
                 commentList.Add(comment);
@@ -144,4 +226,10 @@
 
         return commentList;
     }
+
+    private void PopulateReview(MouseEventArgs mouseEventArgs, Visit visit)
+    {
+        ReviewingVisit = visit;
+    }
+
 }

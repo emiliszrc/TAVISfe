@@ -194,5 +194,21 @@ namespace TravelManagerFE.Data
 
             return locationResponse;
         }
+
+        public void RemoveVisit(string tripId, string contextId)
+        {
+            var client = new RestClient($"https://localhost:44308/api/trips/{tripId}/Visits/{contextId}");
+            var request = new RestRequest(Method.DELETE);
+            request.AddHeader("content-type", "application/json");
+
+            var response = client.Execute(request);
+
+            if (!response.StatusCode.Equals(System.Net.HttpStatusCode.OK))
+            {
+                //throw new TripAdvisorApiException($"Could not retrieve information from TripAdvisor. Response code: {response.StatusCode}");
+            }
+
+            var locationResponse = JsonConvert.DeserializeObject<Location>(response.Content);
+        }
     }
 }

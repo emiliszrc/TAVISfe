@@ -38,13 +38,18 @@
             </div>
         </div>
     </EditForm>*@
+<p>
+    Trip visits
+</p>
 <Dropzone Items="trip.Visits" Class="plk-dd-dropzone-visits">
     <div class="mat-layout-grid mat-layout-grid-align-left" style="max-width: 800px;">
         <div class="mat-layout-grid-inner">
             <div class="mat-layout-grid-cell">
                 <span>@context.Location.Title</span>
             </div>
-            <div class="mat-layout-grid-cell"></div>
+            <div class="mat-layout-grid-cell">
+                <span>Arrive at: @context.Arrival</span>
+            </div>
             <div class="mat-layout-grid-cell">
                 <MatButton @onclick="@(() => OpenVisitEdit(@context))" class="btn btn-secondary m-1">
                     Edit
@@ -52,6 +57,13 @@
                         edit
                     </span>
                 </MatButton>
+                <MatButton @onclick="@(() => RemoveVisit(@context))" class="btn btn-secondary m-1">
+                    Remove
+                    <span class="material-icons">
+                        delete
+                    </span>
+                </MatButton>
+                
             </div>
         </div>
     </div>
@@ -141,6 +153,12 @@
     private void OpenVisitEdit(Visit context)
     {
         throw new NotImplementedException();
+    }
+
+    private void RemoveVisit(Visit context)
+    {
+        TripService.RemoveVisit(trip.Id, context.Id);
+        trip = TripService.GetTrip(Id);
     }
 
 }

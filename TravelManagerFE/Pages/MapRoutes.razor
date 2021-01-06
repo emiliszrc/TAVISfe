@@ -4,11 +4,17 @@
 @using Microsoft.AspNetCore.Builder.Extensions
 @using Microsoft.AspNetCore.Routing
 @using TravelManagerFE.Data
+@using TravelManagerFE.Data.Models
 @using MapOptions = GoogleMapsComponents.Maps.MapOptions
+@using System.Globalization
+@using Humanizer
 
-<h1>Google Map</h1>
+<h1>Visits in order</h1>
 
 <GoogleMap @ref="@map1" Id="map1" Options="@mapOptions" Height="350px" OnAfterInit="@(async () => await OnAfterInitAsync())"></GoogleMap>
+<div></div>
+<br/>
+<br/>
 <button @onclick="@RemoveRoute">Remove route</button>
 <p>
     Duration: @_durationTotalString <br />
@@ -20,22 +26,39 @@
 {
     @if (_directionsResult != null)
     {
-        <p>
-            @foreach (var route in _directionsResult.Routes)
-            {
-                @foreach (var let in route.Legs)
+        @*<p>
+                @foreach (var route in _directionsResult.Routes)
                 {
-                    <p>
-                        <h>Routing from <b>@let.StartAddress</b> to <b>@let.EndAddress</b></h>
-                        @for(var i=0; i<let.Steps.Count(); i++)
-                        {
-                            <div>@(i+1). @((MarkupString) let.Steps.ElementAt(i).Instructions)</div>
-                        }
-                    </p>
+                    @foreach (var let in route.Legs)
+                    {
+                        <p>
+                            <h>Routing from <b>@let.StartAddress</b> to <b>@let.EndAddress</b></h>
+                            @for(var i=0; i<let.Steps.Count(); i++)
+                            {
+                                <div>@(i+1). @((MarkupString) let.Steps.ElementAt(i).Instructions)</div>
+                            }
+                        </p>
+                    }
                 }
+            </p>*@
+        <MatAccordion Multi="true">
+            @foreach (var directionsLeg in _directionsResult.Routes.FirstOrDefault().Legs)
+            {
+                <MatExpansionPanel>
+                    <MatExpansionPanelSummary>
+                        <MatExpansionPanelHeader>Routing from <b>@retrieveVisitByLatLngLiteral(directionsLeg.StartLocation).Location.Title</b> to <b>@retrieveVisitByLatLngLiteral(directionsLeg.EndLocation).Location.Title</b></MatExpansionPanelHeader>
+                    </MatExpansionPanelSummary>
+                    <MatExpansionPanelDetails>
+                        @for (var i = 0; i < directionsLeg.Steps.Count(); i++)
+                        {
+                            <div>@(i+1). @((MarkupString)directionsLeg.Steps.ElementAt(i).Instructions)</div>
+                        }
+                    </MatExpansionPanelDetails>
+                </MatExpansionPanel>
             }
-        </p>
+        </MatAccordion>
     }
+
 }
 
 @functions
@@ -96,28 +119,41 @@
             TravelMode = TravelMode.Driving,
             DrivingOptions = new DrivingOptions()
         };
-
-        _directionsResult = await dirRend.Route(dr, new DirectionsRequestOptions()
+        try
         {
-            StripLegsStepsLatLngs = false,
-            StripOverviewPath = false,
-            StripOverviewPolyline = false,
-            StripLegsStepsPath = false,
-            StripLegsSteps = false
-        });
+            _directionsResult = await dirRend.Route(dr, new DirectionsRequestOptions()
+            {
+                StripLegsStepsLatLngs = false,
+                StripOverviewPath = false,
+                StripOverviewPolyline = false,
+                StripLegsStepsPath = false,
+                StripLegsSteps = false
+            });
 
-        if (_directionsResult == null)
-        {
-            return;
+            if (_directionsResult == null)
+            {
+                return;
+            }
         }
-
+        catch (Exception e)
+        {
+            Console.WriteLine("Error parsing DirectionsResult Object. Message: " + e.Message);
+        }
         var routes = _directionsResult.Routes.SelectMany(x => x.Legs).ToList();
+
+        float? totalDuration = 0F;
+        float? totalDistance = 0F;
 
         foreach (var route in routes)
         {
-            _durationTotalString += route.Duration?.Text;
-            _distanceTotalString += route.Distance.Text;
+
+            totalDuration += route.Duration?.Value;
+            totalDistance += route.Distance?.Value;
+
+            _durationTotalString = TimeSpan.FromSeconds((double) totalDuration).Humanize(4);
+            _distanceTotalString = $"{(totalDistance / 1000000)} km";
         }
+
     }
 
     private async Task RemoveRoute()
@@ -145,5 +181,29 @@
     public void map()
     {
 
+    }
+
+    private Visit retrieveVisitByLatLngLiteral(LatLngLiteral latlng)
+    {
+        int precision = 1000;
+
+        var visit = trip.Visits.FirstOrDefault(v =>
+            compareDoubles(double.Parse(v.Location.Latitude, System.Globalization.CultureInfo.InvariantCulture), latlng.Lat, precision)
+            && compareDoubles(double.Parse(v.Location.Longtitude, System.Globalization.CultureInfo.InvariantCulture), latlng.Lng, precision));
+
+        if (visit == null)
+        {
+            precision /= 10;
+            visit = trip.Visits.FirstOrDefault(v =>
+                compareDoubles(double.Parse(v.Location.Latitude, System.Globalization.CultureInfo.InvariantCulture), latlng.Lat, precision)
+                && compareDoubles(double.Parse(v.Location.Longtitude, System.Globalization.CultureInfo.InvariantCulture), latlng.Lng, precision));
+        }
+
+        return visit;
+    }
+
+    private bool compareDoubles(double a, double b, int precision)
+    {
+        return Math.Floor(a * precision) == Math.Floor(b * precision);
     }
 }

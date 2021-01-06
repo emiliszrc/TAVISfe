@@ -7,6 +7,10 @@ namespace TravelManagerFE.Data.Models
 {
     public class Visit
     {
+        public Visit()
+        {
+            Location = new Location();
+        }
         public string Id { get; set; }
         public string VisitationIndex { get; set; }
         public DateTime Arrival { get; set; }
