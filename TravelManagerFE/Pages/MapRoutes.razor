@@ -9,18 +9,23 @@
 @using System.Globalization
 @using Humanizer
 
-<h1>Visits in order</h1>
-
+@if (trip != null)
+{
+    <h1>Visits in order</h1>
+}
 <GoogleMap @ref="@map1" Id="map1" Options="@mapOptions" Height="350px" OnAfterInit="@(async () => await OnAfterInitAsync())"></GoogleMap>
 <div></div>
-<br/>
-<br/>
-<button @onclick="@RemoveRoute">Remove route</button>
+<br />
+<br />
+@if(trip != null)
+{
+<MatButton @onclick="@RemoveRoute">Remove route</MatButton>
 <p>
     Duration: @_durationTotalString <br />
     Distance: @_distanceTotalString <br />
 </p>
-<button @onclick="@ShowTripSteps">Show steps</button>
+<MatButton @onclick="@ShowTripSteps">Show steps</MatButton>
+}
 
 @if (TravelStepsShown)
 {
@@ -46,7 +51,7 @@
             {
                 <MatExpansionPanel>
                     <MatExpansionPanelSummary>
-                        <MatExpansionPanelHeader>Routing from <b>@retrieveVisitByLatLngLiteral(directionsLeg.StartLocation).Location.Title</b> to <b>@retrieveVisitByLatLngLiteral(directionsLeg.EndLocation).Location.Title</b></MatExpansionPanelHeader>
+                        <MatExpansionPanelHeader>Routing from <b>@retrieveVisitByLatLngLiteral(directionsLeg.StartLocation).Location.Title</b>@* to <b>@retrieveVisitByLatLngLiteral(directionsLeg.EndLocation).Location.Title</b>*@</MatExpansionPanelHeader>
                     </MatExpansionPanelSummary>
                     <MatExpansionPanelDetails>
                         @for (var i = 0; i < directionsLeg.Steps.Count(); i++)
@@ -58,7 +63,6 @@
             }
         </MatAccordion>
     }
-
 }
 
 @functions
@@ -73,17 +77,91 @@
 
     [Parameter]
     public Trip trip { get; set; }
+    [Parameter]
+    public Visit visit { get; set; }
+
+    private Stack<Marker> markers = new Stack<Marker>();
+
+    private List<String> _events = new List<String>();
+
+    private async Task AddMarker()
+    {
+        var visitLatLng = new LatLngLiteral
+        {
+            Lat = Double.Parse(visit.Location.Latitude, CultureInfo.InvariantCulture),
+            Lng = Double.Parse(visit.Location.Longtitude, CultureInfo.InvariantCulture)
+        };
+
+        var marker = await Marker.CreateAsync(map1.JsRuntime, new MarkerOptions()
+        {
+            Position = visitLatLng,
+            Map = map1.InteropObject,
+            Label = $"{visit.Location.Address}",
+            Icon = new Icon()
+            {
+                Url = "https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png"
+            }
+            //Icon = "https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png"
+        });
+
+        //await marker.SetMap(map1);
+
+        //var map = await marker.GetMap();
+
+        var icon = await marker.GetIcon();
+
+        Console.WriteLine($"Get icon result type is : {icon.Value.GetType()}");
+
+        icon.Switch(
+            s => Console.WriteLine(s),
+            i => Console.WriteLine(i.Url),
+            _ => { });
+
+        //if (map == map1.InteropObject)
+        //{
+        //    Console.WriteLine("Yess");
+        //}
+        //else
+        //{
+        //    Console.WriteLine("Nooo");
+        //}
+
+        markers.Push(marker);
+
+        await marker.AddListener<MouseEvent>("click", async e =>
+        {
+            var markerLabel = await marker.GetLabel();
+            _events.Add("click on " + markerLabel);
+            StateHasChanged();
+
+            e.Stop();
+        });
+    }
 
     protected override void OnInitialized()
     {
-        mapOptions = new MapOptions()
+        var center = new LatLngLiteral();
+        if (trip != null)
         {
-            Zoom = 13,
-            Center = new LatLngLiteral()
+            center = new LatLngLiteral
             {
                 Lat = 40.603629,
                 Lng = -75.472518
-            },
+            };
+        }
+        else if (visit != null)
+        {
+            center = new LatLngLiteral
+            {
+                Lat = Double.Parse(visit.Location.Latitude, CultureInfo.InvariantCulture),
+                Lng = Double.Parse(visit.Location.Longtitude, CultureInfo.InvariantCulture)
+            };
+        }
+
+        mapOptions = new MapOptions()
+        {
+            Zoom = 13,
+            Center = center,
             MapTypeId = MapTypeId.Roadmap
         };
     }
@@ -150,7 +228,7 @@
             totalDuration += route.Duration?.Value;
             totalDistance += route.Distance?.Value;
 
-            _durationTotalString = TimeSpan.FromSeconds((double) totalDuration).Humanize(4);
+            _durationTotalString = TimeSpan.FromSeconds((double)totalDuration).Humanize(4);
             _distanceTotalString = $"{(totalDistance / 1000000)} km";
         }
 
@@ -164,13 +242,27 @@
 
     private async Task OnAfterInitAsync()
     {
+        if (markers.Any())
+        {
+            var lastMarker = markers.Pop();
+            await lastMarker.SetMap(null);
+        }
+
         //Create instance of DirectionRenderer
         dirRend = await DirectionsRenderer.CreateAsync(map1.JsRuntime, new DirectionsRendererOptions()
         {
             Map = map1.InteropObject
         });
 
-        await mapCurrentTrip();
+        if (trip != null)
+        {
+            await mapCurrentTrip();
+        }
+        else if (visit != null)
+        {
+            await AddMarker();
+        }
+
     }
 
     private void ShowTripSteps()

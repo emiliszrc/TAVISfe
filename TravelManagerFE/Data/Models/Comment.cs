@@ -7,6 +7,11 @@ namespace TravelManagerFE.Data.Models
 {
     public class Comment
     {
+        public Comment()
+        {
+            ChildComments = new List<Comment>();
+        }
+
         public string Id { get; set; }
 
         public string Text { get; set; }
@@ -14,6 +19,8 @@ namespace TravelManagerFE.Data.Models
         public DateTime CreatedDate { get; set; }
 
         public Visit Visit { get; set; }
+
+        public Review Review { get; set; }
 
         public User Creator { get; set; }
 

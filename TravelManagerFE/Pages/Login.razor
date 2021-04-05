@@ -3,58 +3,82 @@
 @using Newtonsoft.Json
 
 @page "/"
-    <div class="fill">
-        <div class="limiter">
-            <div class="wrap-login">
-                <span class="login-title">
-                    <div>
-                        <b>Login</b>
-                    </div>
-                </span>
-                <div class="login-input-field">
-                    <input class="login-input" placeholder="username" @bind="username"/>
+<div class="fill">
+    <div class="limiter">
+        <div class="wrap-login">
+            <span class="login-title">
+                <div>
+                    <b>Login</b>
                 </div>
-                <div class="login-input-field">
-                    <input class="login-input" placeholder="password" @bind="password"/>
+            </span>
+            <div class="login-input-field">
+                <input class="login-input" placeholder="username" @bind="username" />
+            </div>
+            <div class="login-input-field">
+                <input class="login-input" placeholder="password" @bind="password" />
+            </div>
+            <div class="login-button-wrap">
+                <div>
+                    <MatButton @onclick="LoginUser">Login</MatButton>
                 </div>
-                <div class="login-button-wrap">
-                    <div>
-                        <button @onclick="LoginUser">Login</button>
-                    </div>
-                </div>
+            </div>
 
-                <div class="login-signup">
-                    <a @onclick="SignupNew">Would You like to Sign Up?</a>
-                </div>
+            <div class="login-signup">
+                <MatButton @onclick="SignupNew">Would You like to Sign Up?</MatButton>
             </div>
         </div>
     </div>
+</div>
 
-    @inject UserService UserService
-    @inject AuthenticationStateProvider AuthenticationStateProvider;
-    @inject NavigationManager NavigationManager;
-    @inject Blazored.SessionStorage.ISessionStorageService SessionStorage
+@inject UserService UserService
+@inject AuthenticationStateProvider AuthenticationStateProvider;
+@inject NavigationManager NavigationManager;
+@inject Blazored.SessionStorage.ISessionStorageService SessionStorage
+@inject IMatToaster Toaster;
 
-    @code {
-        private string username;
-        private string password;
+@code {
+    private string username;
+    private string password;
 
-        public async Task LoginUser()
+    public async Task LoginUser()
+    {
+        var currentUser = await UserService.GetByUsername(username);
+
+        if (currentUser != null && currentUser.Username != null && currentUser.Password == password)
         {
-            var currentUser = await UserService.GetByUsername(username);
+            ((CustomAuthenticationStateProvider)AuthenticationStateProvider).MarkUserAsAuthenticated(currentUser);
 
-            if (currentUser != null && currentUser.Password == password)
-            {
-                ((CustomAuthenticationStateProvider) AuthenticationStateProvider).MarkUserAsAuthenticated(currentUser);
-
-                var serialized = JsonConvert.SerializeObject(currentUser);
-                await SessionStorage.SetItemAsync("user", serialized);
-                NavigationManager.NavigateTo("/tripList");
-            }
+            var serialized = JsonConvert.SerializeObject(currentUser);
+            await SessionStorage.SetItemAsync("user", serialized);
+            NavigationManager.NavigateTo("/tripList");
+            ShowToast("Logged in successfully", MatToastType.Info, "Success", false);
+            return;
         }
 
-        public void SignupNew()
-        {
-            NavigationManager.NavigateTo("/signup");
-        }
+        ShowToast("Username or password is incorrect", MatToastType.Warning, "Incorrect", false);
     }
+
+    public void SignupNew()
+    {
+        NavigationManager.NavigateTo("/signup");
+    }
+
+    private void ShowToast(string text, MatToastType type, string title, bool requireInteraction)
+    {
+        Toaster.Add(text, type, title, null, config =>
+        {
+            config.ShowCloseButton = true;
+            config.ShowProgressBar = true;
+
+        //config.ShowTransitionDuration = Convert.ToInt32(_showTransitionDuration);
+        config.VisibleStateDuration = Convert.ToInt32(5000);
+            config.RequireInteraction = requireInteraction;
+        //config.HideTransitionDuration = Convert.ToInt32(_hideTransitionDuration);
+
+        if (requireInteraction)
+            {
+                config.Onclick = toast => Task.CompletedTask;
+            }
+        });
+    }
+}

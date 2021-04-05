@@ -21,18 +21,9 @@
             <div class="login-input-field">
                 <input class="login-input" placeholder="surname" @bind="surname" />
             </div>
-            <div class="login-input-dropdown">
-                <select class="form-control selectpicker" @bind="ddlIndex">
-                    <option>--select--</option>
-                    @foreach (var item in organisations)
-                    {
-                        <option value="@item.Id">@item.Title</option>
-                    }
-                </select>
-            </div>
             <div class="login-button-wrap">
                 <div>
-                    <button @onclick="SignupUser">Submit</button>
+                    <MatButton @onclick="SignupUser">Submit</MatButton>
                 </div>
             </div>
         </div>
@@ -58,7 +49,7 @@
 
     public void SignupUser()
     {
-        userService.CreateUser(username, password, name, surname, ddlIndex);
+        userService.CreateUser(username, password, name, surname);
         NavigationManager.NavigateTo("/");
     }
 }

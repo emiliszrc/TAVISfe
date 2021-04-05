@@ -1,6 +1,10 @@
 ﻿@using TravelManagerFE.Data
+@using Newtonsoft.Json
+@using Blazored.SessionStorage
 @inherits LayoutComponentBase
 @inject NavigationManager NavigationManager
+@inject IMatToaster Toaster
+@inject ISessionStorageService SessionStorage
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
 <AuthorizeView>
@@ -16,7 +20,12 @@
         <AuthorizeView>
             <Authorized>
                 <div class="top-row px-4">
-                    <a href="/ " @onclick="(() => Logout())">Logout</a>
+                    @if (User != null)
+                    {
+                        <p>Hello, @User.Name @User.Surname</p>
+                    }
+                    <MatButton @onclick="@(() => OpenProfile())"> Profile </MatButton>
+                    <MatButton @onclick="(() => Logout())">Logout</MatButton>
                 </div>
             </Authorized>
             <NotAuthorized>
@@ -29,9 +38,50 @@
 </div>
 
 @code{
+    public User User { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        base.OnInitialized();
+        var user = await SessionStorage.GetItemAsync<string>("user");
+
+        if (user != null)
+        {
+            User = JsonConvert.DeserializeObject<User>(user);
+        }
+
+        this.StateHasChanged();
+    }
+
     public async Task Logout()
     {
         await ((CustomAuthenticationStateProvider)AuthenticationStateProvider).MarkUserAsLoggedOut();
+        ShowToast("Logged out successfully", MatToastType.Info, "Success", false);
         NavigationManager.NavigateTo("");
     }
+
+    private void OpenProfile()
+    {
+        NavigationManager.NavigateTo("/profile");
+    }
+
+    private void ShowToast(string text, MatToastType type, string title, bool requireInteraction)
+    {
+        Toaster.Add(text, type, title, null, config =>
+        {
+            config.ShowCloseButton = true;
+            config.ShowProgressBar = true;
+
+            //config.ShowTransitionDuration = Convert.ToInt32(_showTransitionDuration);
+            config.VisibleStateDuration = Convert.ToInt32(5000);
+            config.RequireInteraction = requireInteraction;
+            //config.HideTransitionDuration = Convert.ToInt32(_hideTransitionDuration);
+
+            if (requireInteraction)
+            {
+                config.Onclick = toast => Task.CompletedTask;
+            }
+        });
+    }
+
 }

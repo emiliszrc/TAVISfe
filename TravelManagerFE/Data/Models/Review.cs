@@ -7,14 +7,37 @@ namespace TravelManagerFE.Data.Models
 {
     public class Review
     {
+        public Review()
+        {
+            Comments = new List<Comment>();
+            Approvals = new List<Approval>();
+        }
+
         public string Id { get; set; }
 
         public Trip Trip { get; set; }
 
         public User User { get; set; }
 
-        public string ApprovalStatus { get; set; }
+        public string Status { get; set; }
 
-        public virtual List<Comment> Comments { get; set; }
+        public List<Comment> Comments { get; set; }
+
+        public List<Approval> Approvals { get; set; }
+
+        public List<Reviewer> Reviewers { get; set; }
+    }
+
+    public class Reviewer
+    {
+        public User User { get; set; }
+        public Review Review { get; set; }
+    }
+
+    public class Approval
+    {
+        public User User { get; set; }
+        public ReviewStatus Status { get; set; }
+        public DateTime CreatedDate { get; set; }
     }
 }

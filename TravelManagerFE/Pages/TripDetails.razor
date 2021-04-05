@@ -2,6 +2,11 @@
 @using TravelManagerFE.Pages
 @using Plk.Blazor.DragDrop
 @using TravelManagerFE.Data.Models
+@using Blazorise
+@using Microsoft.AspNetCore.Components
+@using System
+@using System.Collections.Generic
+@using System.Linq
 
 @page "/tripDetails/{id}"
 
@@ -9,7 +14,8 @@
 
 @inject NavigationManager NavigationManager
 @inject TripService TripService
-
+@inject OrganisationService OrganisationService;
+@inject IMatToaster Toaster
 
 <div>
     <b>@trip.Title</b>
@@ -41,6 +47,12 @@
 <p>
     Trip visits
 </p>
+@if (validity != null)
+{
+    <div>
+        <MatCheckbox @bind-Value="@IgnoreWarnings" Label="Ignore validation warnings"></MatCheckbox>
+    </div>
+}
 <Dropzone Items="trip.Visits" Class="plk-dd-dropzone-visits">
     <div class="mat-layout-grid mat-layout-grid-align-left" style="max-width: 800px;">
         <div class="mat-layout-grid-inner">
@@ -49,6 +61,9 @@
             </div>
             <div class="mat-layout-grid-cell">
                 <span>Arrive at: @context.Arrival</span>
+            </div>
+            <div class="mat-layout-grid-cell">
+                <span>Depart at: @context.Departure</span>
             </div>
             <div class="mat-layout-grid-cell">
                 <MatButton @onclick="@(() => OpenVisitEdit(@context))" class="btn btn-secondary m-1">
@@ -63,9 +78,51 @@
                         delete
                     </span>
                 </MatButton>
-                
             </div>
         </div>
+        @if (validity != null && validity.Reasons.Any())
+        {
+            <div style="white-space: nowrap;display: inline-block">
+                <div style="white-space: nowrap; display: inline-block">
+                    Visit is
+                    @if (validity.Reasons.Where(r => r.VisitId == @context.Id).Any(r => r.IsBlocker))
+                    {
+                        <p>invalid</p>;
+                    }
+                    else if (validity.Reasons.Any(r => r.VisitId == @context.Id))
+                    {
+                        <p>valid with warnings</p>
+                    }
+                    else
+                    {
+                        <p>valid</p>}
+                </div>
+                @if (validity.Reasons.Where(r => r.VisitId == @context.Id).Any(r => r.IsBlocker))
+                {
+                    <MatIcon Icon="error"></MatIcon>
+                }
+                else if (validity.Reasons.Any(r => r.VisitId == @context.Id))
+                {
+                    <MatIcon Icon="warning"></MatIcon>
+                }
+                else
+                {
+                    <MatIcon Icon="check"></MatIcon>
+                }
+            </div>
+            <MatList Style="position:relative">
+                @foreach (var reason in validity.Reasons.Where(r => r.VisitId == @context.Id && r.IsBlocker))
+                {
+                    <MatListItem> <div style="max-width:90%">@reason.Text</div> <MatIcon Icon="error" Style="position: absolute;right: 10px;top: 5px;"></MatIcon> </MatListItem>
+                    <MatDivider></MatDivider>
+                }
+                @foreach (var reason in validity.Reasons.Where(r => r.VisitId == @context.Id && !r.IsBlocker))
+                {
+                    <MatListItem><div style="max-width:90%">@reason.Text</div> <MatIcon Icon="warning" Style="position: absolute;right: 10px;top: 5px;"></MatIcon> </MatListItem>
+                    <MatDivider></MatDivider>
+                }
+            </MatList>
+        }
     </div>
     <MatDivider></MatDivider>
 </Dropzone>
@@ -81,6 +138,7 @@
 </div>
 
 <MatButton @onclick="DisplayDestinationSearch">Add new visit</MatButton>
+<MatButton @onclick="SubmitForReview">Submit for review</MatButton>
 
 @if (DestinationSearchShown)
 {
@@ -99,6 +157,10 @@
     private bool DestinationSearchShown { get; set; }
     private bool MapRoutesShown { get; set; }
     private DestinationAddRequest destinationRequest { get; set; } = new DestinationAddRequest();
+    [CascadingParameter] public IModalService Modal { get; set; }
+    private TripService.Validity validity { get; set; }
+    private bool panelOpenState { get; set; } = false;
+    private bool IgnoreWarnings { get; set; } = false;
 
     private class DestinationAddRequest
     {
@@ -113,6 +175,7 @@
     {
         base.OnInitialized();
         DestinationSearchShown = false;
+        panelOpenState = false;
         trip = TripService.GetTrip(Id);
         trip.Visits = trip.Visits.OrderBy(destination => destination.VisitationIndex).ToList();
     }
@@ -152,7 +215,7 @@
 
     private void OpenVisitEdit(Visit context)
     {
-        throw new NotImplementedException();
+        NavigationManager.NavigateTo($"/tripDetails/editVisit/{context.Id}");
     }
 
     private void RemoveVisit(Visit context)
@@ -161,4 +224,67 @@
         trip = TripService.GetTrip(Id);
     }
 
+    private async void SubmitForReview()
+    {
+        if (validity == null || !(validity !=null && validity.IsValid && IgnoreWarnings))
+        {
+            validity = TripService.GetTripValidity(trip.Id);
+
+            if (validity != null)
+            {
+                if (validity.IsValid)
+                {
+                    ShowToast("Please review listed warnings", MatToastType.Info, "Trip submission resulted in warnings", true);
+                    return;
+                }
+
+                ShowToast("Please review listed errors", MatToastType.Warning, "Trip submission resulted in errors", true);
+                return;
+            }
+        }
+
+        var reviewers = OrganisationService.getPublicOrganisations().FirstOrDefault().Contracts;
+
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(reviewers), reviewers);
+        var formModal = Modal.Show<ReviewerSelection>("Select reviewers", parameters);
+        var result = await formModal.Result;
+        if (result.Data == null)
+        {
+            return;
+        }
+
+        var reviewRequest = new ReviewRequest
+        {
+            TripId = trip.Id,
+            Reviewers = ((List<ReviewerSelection.Reviewing>)result.Data).Where(r => r.Selected).Select(r => r.User.Id).ToList(),
+            IgnoreWarnings = IgnoreWarnings
+        };
+
+        var review = TripService.CreateReview(reviewRequest);
+
+        if (review != null)
+        {
+            ShowToast("Successfully submitted a trip for review", MatToastType.Info, "Success", false);
+        }
+    }
+
+    private void ShowToast(string text, MatToastType type, string title, bool requireInteraction)
+    {
+        Toaster.Add(text, type, title, null, config =>
+        {
+            config.ShowCloseButton = true;
+            config.ShowProgressBar = true;
+
+            //config.ShowTransitionDuration = Convert.ToInt32(_showTransitionDuration);
+            config.VisibleStateDuration = Convert.ToInt32(5000);
+            config.RequireInteraction = requireInteraction;
+            //config.HideTransitionDuration = Convert.ToInt32(_hideTransitionDuration);
+
+            if (requireInteraction)
+            {
+                config.Onclick = toast => Task.CompletedTask;
+            }
+        });
+    }
 }

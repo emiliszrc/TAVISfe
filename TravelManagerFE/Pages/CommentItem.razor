@@ -1,0 +1,111 @@
+﻿@using TravelManagerFE.Data.Models
+@using Blazorise
+@inject TripService TripService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ReplyCollapseNotifier ReplyCollapser
+@implements IDisposable
+
+
+
+@{
+    <div>
+        <li>
+            @CommentNode.Text
+            <div>
+                @if (CommentNode.Creator != null)
+                {
+                    <div>
+                        By @CommentNode.Creator.Name @CommentNode.Creator.Surname
+                    </div>
+                }
+            </div>
+            <MatDivider></MatDivider>
+            <MatButton OnClick="ShowReply">Reply</MatButton>
+            @if (showReply)
+            {
+                <EditForm Model="@CommentRequest" OnValidSubmit="@AddCommentReply">
+                    <label>
+                        <MatTextField TextArea="true" @bind-Value="CommentRequest.Text"></MatTextField>
+                    </label>
+                    <MatButton>class="login-button-wrap" type="submit">Submit</MatButton>
+                </EditForm>
+            }
+            @if (@CommentNode.ChildComments != null && CommentNode.ChildComments.Any())
+            {
+                <ul id="@Level">
+                    @foreach (var child in CommentNode.ChildComments.OrderBy(c => c.CreatedDate))
+                    {
+                        <CommentItem CommentNode=@child Level="@(Level + 1)" @key=child CurrentReview="CurrentReview"/>
+                    }
+                </ul>
+            }
+        </li>
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public Comment CommentNode { get; set; }
+
+    [Parameter]
+    public Review CurrentReview { get; set; }
+
+    [Parameter]
+    public int Level { get; set; }
+
+    private bool showReply { get; set; } = false;
+    private CommentRequest CommentRequest { get; set; } = new CommentRequest();
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        showReply = false;
+        ReplyCollapser.Notify += OnNotify;
+    }
+
+    public async void ShowReply()
+    {
+        if (!showReply)
+        {
+            await ReplyCollapser.Update();
+        }
+        showReply = !showReply;
+        StateHasChanged();
+    }
+
+    private async void AddCommentReply()
+    {
+        var parameters = new ModalParameters();
+
+        var currentlyLoggedIn = await ((CustomAuthenticationStateProvider) AuthenticationStateProvider).GetCurrentUser();
+
+        CommentRequest.VisitId = CommentNode.Visit.Id;
+        CommentRequest.ParentCommentId = CommentNode.Id;
+        CommentRequest.ReviewId = CurrentReview.Id;
+        CommentRequest.CreatorId = currentlyLoggedIn.Id;
+
+        var review = TripService.PostComment(CommentRequest.ReviewId, CommentRequest);
+
+        CommentNode = review.Comments.FirstOrDefault(c => c.Id == CommentNode.Id);
+
+        CommentRequest = new CommentRequest();
+
+        showReply = false;
+
+        StateHasChanged();
+    }
+
+    public async Task OnNotify(string key, int value)
+    {
+        await InvokeAsync(() => { showReply = false; });
+
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        ReplyCollapser.Notify -= OnNotify;
+    }
+
+}

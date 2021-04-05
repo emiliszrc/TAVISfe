@@ -1,33 +1,49 @@
 ﻿@using Newtonsoft.Json
+@using TravelManagerFE.Data.Models
+@using Microsoft.AspNetCore.Components
+@using System.Collections.Generic
+@using System.Linq
+@using System.Threading.Tasks
 <h3>Reviews</h3>
 
 @page "/reviewList"
 <AuthorizeView>
     <Authorized>
         <div>
-            @if (trips.Any())
+            @if (isEligibleForReviews)
             {
-
-                @if (currentUser != null)
+                @if (reviews.Any())
                 {
-                    <table>
-                        <tr>
-                            <th>Title</th>
-                            <th>Type</th>
-                            <th>Cost</th>
-                            <th></th>
-                        </tr>
-                        @foreach (var trip in trips.Where(t => t.Creator.OrganisationId == currentUser.OrganisationId))
-                        {
-                            <tr class="trip-table-row">
-                                <td>@trip.Title</td>
-                                <td>@trip.Type</td>
-                                <td>@trip.Cost</td>
-                                <td><button @onclick="@(() => GetDetails(trip))">Review</button></td>
+
+                    @if (currentUser != null)
+                    {
+                        <table>
+                            <tr>
+                                <th>Title</th>
+                                <th>Type</th>
+                                <th>Cost</th>
+                                <th></th>
                             </tr>
-                        }
-                    </table>
+                            @foreach (var review in reviews)
+                            {
+                                <tr class="trip-table-row">
+                                    <td>@review.Trip.Title</td>
+                                    <td>@review.Trip.Type</td>
+                                    <td>@review.Trip.Cost</td>
+                                    <td><MatButton @onclick="@(() => GetDetails(review))">Review</MatButton></td>
+                                </tr>
+                            }
+                        </table>
+                    }
                 }
+                else
+                {
+                    <p>No reviews available.</p>
+                }
+            }
+            else
+            {
+                <p>You do not belong to any organization.</p>
             }
         </div>
     </Authorized>
@@ -41,22 +57,26 @@
 @inject NavigationManager NavigationManager
 
 @code {
-    public List<Trip> trips = new List<Trip>();
+    public List<Review> reviews = new List<Review>();
     public User currentUser;
+    public bool isEligibleForReviews = true;
 
     protected override async Task OnInitializedAsync()
     {
         base.OnInitialized();
 
-        trips = TripService.GetTrips();
-
         var user = await SessionStorage.GetItemAsync<string>("user");
         currentUser = JsonConvert.DeserializeObject<User>(user);
+
+        reviews = TripService.GetReviewsByUserId(currentUser.Id);
+        isEligibleForReviews = currentUser.Contracts.Any();
+
+        this.StateHasChanged();
     }
 
-    private void GetDetails(Trip trip)
+    private void GetDetails(Review review)
     {
-        NavigationManager.NavigateTo($"review/{trip.Id}");
+        NavigationManager.NavigateTo($"review/{review.Id}");
     }
 
 }

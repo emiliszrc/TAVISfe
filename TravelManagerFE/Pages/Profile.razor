@@ -1,0 +1,196 @@
+﻿<h3>Profile</h3>
+@page "/profile"
+@using TravelManagerFE.Data.Models
+@using System.Linq
+
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserService userService
+@inject OrganisationService organisationService
+@inject IMatToaster Toaster
+
+<MatTabGroup>
+    <MatTab Label="Settings">
+
+    </MatTab>
+    <MatTab Label="Organisation settings">
+        @if (User != null)
+        {
+            @if (User.Contracts.Any() && User.Contracts.Any(c => c.ContractType == ContractType.Owner))
+            {
+                <p></p>
+                <p>Add members to organisation</p>
+                <MatSelectItem @bind-Value="@SelectedOrganisation" Items="@(User.Contracts.Where(c => c.ContractType == ContractType.Owner).Select(c => c.Organisation).ToList())">
+                    <ItemTemplate>@context.Title</ItemTemplate>
+                </MatSelectItem>
+                <MatTextField @bind-Value="Username" HelperText="Title" Label="Title"></MatTextField>
+
+                <MatButton @onclick="Invite">Invite</MatButton>
+            }
+
+            <MatDivider></MatDivider>
+
+            <p></p>
+            <p>Create an organisation</p>
+
+            <EditForm Model="OrganisationRequest">
+                <p>
+                    <MatTextField @bind-Value="OrganisationRequest.Title" HelperText="Title" Label="Title"></MatTextField>
+                </p>
+            </EditForm>
+            <MatButton @onclick="Submit">Submit</MatButton>
+
+            <MatDivider></MatDivider>
+
+            <p></p>
+            <p>Review invites to organisations</p>
+            @if (Invites != null)
+            {
+                @foreach (var invite in Invites.Where(i=>i.Status == InviteStatus.New))
+                {
+                    <tr>
+                        <td>@invite.Organisation.Title</td>
+                        <td><MatButton @onclick="@(() => AcceptInvite(invite))">Accept invite</MatButton></td>
+                        <td><MatButton @onclick="@(() => RejectInvite(invite))">Reject invite</MatButton></td>
+                    </tr>
+                }
+            }
+        }
+    </MatTab>
+</MatTabGroup>
+
+@code {
+    public User User { get; set; }
+    public Organisation SelectedOrganisation { get; set; }
+    public OrganisationRequest OrganisationRequest { get; set; } = new OrganisationRequest();
+    public List<Invite> Invites { get; set; } = new List<Invite>();
+    public string Username { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        var user = await ((CustomAuthenticationStateProvider)AuthenticationStateProvider).GetCurrentUser();
+        if (user == null)
+        {
+            return;
+        }
+        User = await userService.GetByUsername(user.Username);
+        Invites = organisationService.GetInvitesForUser(User.Id);
+    }
+
+    private void Submit()
+    {
+        OrganisationRequest.OwnerId = User.Id;
+        var organisation = organisationService.CreateNewOrganisation(OrganisationRequest);
+
+        if (organisation != null)
+        {
+            ShowToast("Successfully created an organisation", MatToastType.Info, "Success", false);
+        }
+
+
+    }
+
+    private async Task Invite()
+    {
+        var user = await userService.GetByUsername(Username);
+
+        if (user == null)
+        {
+            ShowToast("User was not found", MatToastType.Warning, "Warning", false);
+            return;
+        }
+
+        var inviteRequest = new InviteRequest
+        {
+            OrganisationId = SelectedOrganisation.Id,
+            Username = Username
+        };
+
+        var organisation = organisationService.InviteUserToOrganisation(inviteRequest);
+
+        if (organisation != null)
+        {
+            ShowToast("Successfully created an invite to organisation", MatToastType.Info, "Success", false);
+        }
+    }
+
+    public class InviteRequest
+    {
+        public string OrganisationId { get; set; }
+        public string Username { get; set; }
+    }
+
+    private void ShowToast(string text, MatToastType type, string title, bool requireInteraction)
+    {
+        Toaster.Add(text, type, title, null, config =>
+        {
+            config.ShowCloseButton = true;
+            config.ShowProgressBar = true;
+
+            //config.ShowTransitionDuration = Convert.ToInt32(_showTransitionDuration);
+            config.VisibleStateDuration = Convert.ToInt32(5000);
+            config.RequireInteraction = requireInteraction;
+            //config.HideTransitionDuration = Convert.ToInt32(_hideTransitionDuration);
+
+            if (requireInteraction)
+            {
+                config.Onclick = toast => Task.CompletedTask;
+            }
+        });
+    }
+
+    private void AcceptInvite(Invite invite)
+    {
+        var inviteRequest = new InviteResponseRequest
+        {
+            InviteId = invite.Id,
+            OrganisationId = invite.Organisation.Id,
+            UserId = invite.User.Id,
+            Status = InviteStatus.Accepted
+        };
+
+        var respo = organisationService.RespondToInvite(invite.Id, inviteRequest);
+
+        if (respo != null)
+        {
+            ShowToast($"Successfully joined {invite.Organisation.Title}", MatToastType.Info, "Success", false);
+        }
+        else
+        {
+            ShowToast($"Failed to join {invite.Organisation.Title}", MatToastType.Warning, "Warning", false);
+        }
+    }
+
+    private void RejectInvite(Invite invite)
+    {
+        var inviteRequest = new InviteResponseRequest
+        {
+            InviteId = invite.Id,
+            OrganisationId = invite.Organisation.Id,
+            UserId = invite.User.Id,
+            Status = InviteStatus.Rejected
+        };
+
+        var respo = organisationService.RespondToInvite(invite.Id, inviteRequest);
+
+        if (respo != null)
+        {
+            ShowToast($"Successfully rejected {invite.Organisation.Title}", MatToastType.Info, "Success", false);
+        }
+        else
+        {
+            ShowToast($"Failed to reject {invite.Organisation.Title}", MatToastType.Warning, "Warning", false);
+        }
+
+    }
+
+    public class InviteResponseRequest
+    {
+        public string InviteId { get; set; }
+        public string OrganisationId { get; set; }
+        public string UserId { get; set; }
+        public InviteStatus Status { get; set; }
+    }
+
+}

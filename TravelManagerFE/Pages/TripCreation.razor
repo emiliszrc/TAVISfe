@@ -1,32 +1,36 @@
 ﻿@page "/tripcreation"
 @using TravelManagerFE.Data
 @using TravelManagerFE.Data.Models
+@using OneOf.Types
 
 <h3>TripCreation</h3>
 
 @inject NavigationManager NavigationManager
 @inject TripService TripService
 @inject AuthenticationStateProvider AuthenticationStateProvider
-@inject UserService UserService;
+@inject UserService UserService
 
 <div>
-    <EditForm Model="@tripRequest" OnValidSubmit="@CreateTrip">
+    <EditForm Model="@tripRequest" OnSubmit="@CreateTrip">
         <div class="body-limiter">
             <div class="wrap-login">
                 <label class="login-input">
                     Title:
-                    <InputText class="login-input-field" id="title" @bind-Value="tripRequest.Title" />
+                    <br/>
+                    <MatTextField id="title" @bind-Value="tripRequest.Title" />
                 </label>
+                <MatDivider></MatDivider>
                 <label>
-                    Type:
-                    <InputSelect class="login-input-field" id="type" @bind-Value="tripRequest.Type">
-                        @foreach (var value in Enum.GetValues(typeof(TripType)))
-                        {
-                            <option>@value</option>
-                        }
-                    </InputSelect>
+                    Creating for organisation:
+                    <br />
+                    <MatSelectItem id="Id" Items="Organisations" @bind-Value="organisation">
+                        <ItemTemplate Context="orgContext">
+                            <span>@orgContext?.Title</span>
+                        </ItemTemplate>
+                    </MatSelectItem>
                 </label>
-                <button class="login-button-wrap" type="submit">Submit</button>
+                <br/>
+                <MatButton class="login-button-wrap" type="submit">Submit</MatButton>
             </div>
         </div>
     </EditForm>
@@ -35,13 +39,28 @@
 @code {
     private string Title { get; set; }
     private TripRequest tripRequest { get; set; } = new TripRequest();
+    private List<Organisation> Organisations { get; set; } = new List<Organisation>();
+    private Organisation organisation { get; set; } = new Organisation();
+    private User CurrentUser;
+
+    protected override async Task OnInitializedAsync()
+    {
+        base.OnInitialized();
+        CurrentUser = await ((CustomAuthenticationStateProvider)AuthenticationStateProvider).GetCurrentUser();
+        Organisations = CurrentUser.Contracts?.Select(c => c.Organisation).ToList();
+        Organisations.Add(new Organisation
+        {
+            Contracts = new List<Contract>(),
+            Id = string.Empty,
+            Title = "Private trip"
+        });
+    }
+
 
     public async void CreateTrip()
     {
-        //TODO
-        var currentlyLoggedIn = await ((CustomAuthenticationStateProvider)AuthenticationStateProvider).GetCurrentUser();
-
-        tripRequest.CreatorId = currentlyLoggedIn.Id;
+        tripRequest.CreatorId = CurrentUser.Id;
+        tripRequest.OrganisationId = organisation.Id;
 
         TripService.CreateTrip(tripRequest);
         NavigationManager.NavigateTo("triplist");

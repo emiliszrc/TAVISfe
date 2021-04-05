@@ -1,14 +1,28 @@
-﻿<CascadingBlazoredModal>
-    <Router AppAssembly="@typeof(Program).Assembly">
-        <Found Context="routeData">
-            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-        </Found>
-        <NotFound>
-            <CascadingAuthenticationState>
-                <LayoutView Layout="@typeof(MainLayout)">
-                    <p>Sorry, there's nothing at this address.</p>
-                </LayoutView>
-            </CascadingAuthenticationState>
-        </NotFound>
-    </Router>
-</CascadingBlazoredModal>
+﻿<MatThemeProvider Theme="@theme">
+    <CascadingBlazoredModal>
+        <Router AppAssembly="@typeof(Program).Assembly">
+            <Found Context="routeData">
+                <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+            </Found>
+            <NotFound>
+                <CascadingAuthenticationState>
+                    <LayoutView Layout="@typeof(MainLayout)">
+                        <p>Sorry, there's nothing at this address.</p>
+                    </LayoutView>
+                </CascadingAuthenticationState>
+            </NotFound>
+        </Router>
+    </CascadingBlazoredModal>
+    <MatToastContainer />
+</MatThemeProvider>
+
+@code
+{
+    MatTheme theme = new MatTheme
+    {
+        Background = "#B56576",
+        Primary = "#6D597A",
+        Secondary = "#B56576",
+        OnPrimary = "#E56B6F"
+    };
+}

@@ -65,8 +65,8 @@ namespace TravelManagerFE.Data
 
             NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(user)));
 
-            var serializedUser = JsonConvert.SerializeObject(user);
-            await sessionStorageService.SetItemAsync("user", serializedUser);
+            //var serializedUser = JsonConvert.SerializeObject(user);
+            //await sessionStorageService.SetItemAsync("user", serializedUser);
 
         }
 
@@ -75,6 +75,12 @@ namespace TravelManagerFE.Data
             try
             {
                 var user = await sessionStorageService.GetItemAsync<string>("user");
+
+                if (user == null)
+                {
+                    return new User();
+                }
+
                 var deserializedUser = JsonConvert.DeserializeObject<User>(user);
 
                 return deserializedUser;

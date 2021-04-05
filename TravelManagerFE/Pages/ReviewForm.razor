@@ -1,153 +1,154 @@
 ﻿<h3>Review</h3>
-<div class="mat-layout-grid">
-<div class="mat-layout-grid-inner">
-    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-5">
-        <h4>@Trip.Visits.Count() destination(s)</h4>
-        <MatAccordion>
-            <MatList style="height: 300px; overflow: scroll; overflow-x: hidden;" TwoLine="true">
-                @foreach (var visit in Trip.Visits)
-                {
-                    <MatListItem OnClick="@(e => PopulateReview(e, visit))">
-                        <MatListItemText>
-                            <MatListItemPrimaryText>
-                                @visit.Location.Title
-                            </MatListItemPrimaryText>
-                            <MatListItemSecondaryText>
-                                @GetTripDestinationComments(visit.Id).Count comment(s)
-                            </MatListItemSecondaryText>
-                        </MatListItemText>
-                    </MatListItem>
-                    <MatDivider></MatDivider>
-                }
-            </MatList>
-        </MatAccordion>
-    </div>
-    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-5">
-    @if (ReviewingVisit != null)
+<MatButton OnClick="ShowOnMap">Show on map</MatButton>
+<div>
+    @if (showOnMap)
     {
-        <div class="mat-layout-grid-inner">
-            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-7">
-
-                <EditForm Model="ReviewingVisit.Location">
-                    <p>
-                        <MatTextField @bind-Value="ReviewingVisit.Location.Title" TextArea="true" Style="width: 130px; pointer-events: none;" HelperText="Helper Text" Label="Title"></MatTextField>
-                    </p>
-                    <p>
-                        <MatSelect HelperText="Helper Text Persistent" Label="Pick the type of the trip" Style="pointer-events: none;"@bind-Value="@ReviewingVisit.Location.Type">
-                            <MatOptionString></MatOptionString>
-                            <MatOptionString Value="geos">Geographical object</MatOptionString>
-                            <MatOptionString Value="lodging">Lodging</MatOptionString>
-                            <MatOptionString Value="things_to_do">Things to do</MatOptionString>
-                        </MatSelect>
-                    </p>
-                    <p>
-                        <MatTextField @bind-Value="ReviewingVisit.Location.Address" TextArea="true" HelperText="Helper Text" Label="Address" Style="height: 130px;pointer-events: none;"></MatTextField>
-                    </p>
-                    <p>
-                        <MatTextField @bind-Value="ReviewingVisit.Location.Latitude" Style="pointer-events: none;" HelperText="Helper Text" Label="Latitude"></MatTextField>
-                    </p>
-                    <p>
-                        <MatTextField @bind-Value="ReviewingVisit.Location.Longtitude" Style="pointer-events: none;" HelperText="Helper Text" Label="Longtitude"></MatTextField>
-                    </p>
-                </EditForm>
-            </div>
-            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-5">
-
-                <EditForm Model="ReviewingVisit">
-                    <p>
-                        <MatTextField @bind-Value="ReviewingVisit.Arrival" Style="pointer-events: none;" HelperText="Helper Text" Label="Arrival"></MatTextField>
-                    </p>
-                    <p>
-                        <MatTextField @bind-Value="ReviewingVisit.Departure" Style="pointer-events: none;" HelperText="Helper Text" Label="Departure"></MatTextField>
-                    </p>
-                </EditForm>
-            </div>
-        </div>
-    }
-    </div>
-</div>
-</div>
-@*<MatAccordion>
-    <MatList style="height: 300px; overflow: scroll; overflow-x: hidden;" TwoLine="true">
-        @foreach (var visit in Trip.Visits)
+        @if (ReviewingVisit != null)
         {
-            <MatListItem OnClick="@(e => PopulateReview(e, visit))">
-                <MatListItemText>
-                    <MatListItemPrimaryText>
-                        @visit.Location.Title
-                    </MatListItemPrimaryText>
-                    <MatListItemSecondaryText>
-                        @GetTripDestinationComments(visit.Id).Count comment(s)
-                    </MatListItemSecondaryText>
-                </MatListItemText>
-            </MatListItem>
-            <MatDivider></MatDivider>
+            <MapRoutes Visit="@ReviewingVisit" />
         }
-    </MatList>
-    @foreach (var visit in Trip.Visits)
-    {
-        <MatExpansionPanel Style="">
-            @*<MatExpansionPanelSummary>
-                <MatExpansionPanelHeader>
-                    @visit.Location.Title
-                </MatExpansionPanelHeader>
-                @if (CurrentReview != null && Trip.Reviews.Any(r => r.Comments.Any(c => c.Visit.Id == visit.Id)))
-                {
-                    <MatExpansionPanelSubHeader>
-                        @GetTripDestinationComments(visit.Id).Count comments
-                    </MatExpansionPanelSubHeader>
-                }
-            </MatExpansionPanelSummary>
-<MatExpansionPanelDetails>
-    @if (CurrentReview != null)
-    {
-        <MatList SingleSelection="true" Style="height: auto; min-height: 200px;">
-            @foreach (var comment in GetTripDestinationComments(visit.Id))
+    }
+</div>
+<div>
+    <span>
+        <MatIconButton Id="approveButton" Style="@acceptButtonStyle" Icon="done" OnClick="@(e => PostStatus(e, ReviewStatus.Approved))" ToggleIcon="done_outlined" Toggled="@IsButtonToggled(ReviewStatus.Approved)"></MatIconButton>
+        <MatIconButton Id="updateButton" Style="@updateButtonStyle" Icon="replay" OnClick="@(e => PostStatus(e, ReviewStatus.NeedsWork))" ToggleIcon="replay_circle_filled" Toggled="@IsButtonToggled(ReviewStatus.NeedsWork)"></MatIconButton>
+        <MatIconButton Id="rejectButton" Style="@rejectButtonStyle" Icon="delete_outline" OnClick="@(e => PostStatus(e, ReviewStatus.Rejected))" ToggleIcon="delete" Toggled="@IsButtonToggled(ReviewStatus.Rejected)"></MatIconButton>
+    </span>
+
+    @*@if (CurrentReview != null)
+        {
+            <MatButton Label="Reviewers" OnClick="@OnClick2" @ref="Button2" ></MatButton>
+            <MatMenu @ref="ReviewersList" >
+                <MatList>
+                    @foreach (var approval in CurrentReview.Approvals.Distinct())
+                    {
+
+                    }
+                    <MatListItem>Item 1</MatListItem>
+                </MatList>
+            </MatMenu>
+        }*@
+</div>
+<div class="mat-layout-grid">
+    <div class="mat-layout-grid-inner">
+        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
+            @if (Trip != null)
             {
-                <MatListItem Style="height: auto; padding: 1rem;">
-                    <MatCard class="demo-mat-card">
-                        <MatCardContent>
-                            <MatBody2 class="demo-mat-card-content demo-mat-card-clean-margin">
-                                @comment.Text
-                            </MatBody2>
-                            <div class="demo-mat-card-content">
-                                <MatSubtitle2 class="demo-mat-card-clean-margin">
-                                    @comment.Creator.Name @comment.Creator.Surname at @comment.CreatedDate
-                                </MatSubtitle2>
-                            </div>
-                        </MatCardContent>
-                    </MatCard>
-                </MatListItem>
+                <h4>@Trip.Visits.Count destination(s)</h4>
+                <MatAccordion>
+                    <MatList style="height: 300px; overflow: scroll; overflow-x: hidden;" TwoLine="true">
+                        @foreach (var visit in Trip.Visits)
+                        {
+                            <MatListItem OnClick="@(e => PopulateReview(e, visit))">
+                                <MatListItemText>
+                                    <MatListItemPrimaryText>
+                                        @visit.Location.Title
+                                    </MatListItemPrimaryText>
+                                    <MatListItemSecondaryText>
+                                        @GetTripDestinationComments(visit.Id).Count comment(s)
+                                    </MatListItemSecondaryText>
+                                </MatListItemText>
+                            </MatListItem>
+                            <MatDivider></MatDivider>
+                        }
+                    </MatList>
+                </MatAccordion>
             }
-        </MatList>
+        </div>
+        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-9">
+            @if (ReviewingVisit != null)
+            {
+                <MatTabGroup>
+                    <MatTab Label="Fields">
+                        <div class="mat-layout-grid-inner mat-layout-grid-cell-span-13" style="padding: 20px 10px;">
+                            <div class="mat-layout-grid-cell">
+                                <EditForm Model="ReviewingVisit.Location">
+                                    <p>
+                                        <MatTextField @bind-Value="ReviewingVisit.Location.Title" IconTrailing="true" Style="" ReadOnly="true" HelperText="Helper Text" Label="Title" FullWidth="true"> </MatTextField>
+                                    </p>
+                                    <p>
+                                        <MatTextField @bind-Value="ReviewingVisit.Location.Type" IconTrailing="true" Style="" ReadOnly="true" HelperText="Helper Text" Label="Title" FullWidth="true"> </MatTextField>
+                                    </p>
+                                    <p>
+                                        <MatTextField @bind-Value="ReviewingVisit.Location.Address" IconTrailing="true" ReadOnly="true" HelperText="" Label="Address" Style="" FullWidth="true"></MatTextField>
+                                    </p>
+                                    <p>
+                                        <MatButton></MatButton>
+                                    </p>
+                                </EditForm>
+                            </div>
+                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-2">
+
+                                <EditForm Model="ReviewingVisit">
+                                    <p>
+                                        <MatTextField @bind-Value="ReviewingVisit.Arrival" Style="" IconTrailing="true" ReadOnly="true" HelperText="Helper Text" Label="Arrival" FullWidth="true"></MatTextField>
+                                    </p>
+                                    <p>
+                                        <MatTextField @bind-Value="ReviewingVisit.Departure" Style="" IconTrailing="true" ReadOnly="true" HelperText="Helper Text" Label="Departure" FullWidth="true"></MatTextField>
+                                    </p>
+                                    <p>
+                                        <MatTextField @bind-Value="ReviewingVisit.Location.Latitude" IconTrailing="true" Style="" ReadOnly="true" HelperText="Helper Text" Label="Latitude" FullWidth="true"></MatTextField>
+                                    </p>
+                                    <p>
+                                        <MatTextField @bind-Value="ReviewingVisit.Location.Longtitude" IconTrailing="true" Style="" ReadOnly="true" HelperText="Helper Text" Label="Longtitude" FullWidth="true"></MatTextField>
+                                    </p>
+                                </EditForm>
+                            </div>
+                        </div>
+                    </MatTab>
+                    <MatTab Label="Warnings">
+
+                    </MatTab>
+                </MatTabGroup>
+
+            }
+        </div>
+    </div>
+</div>
+@if (ReviewingVisit != null)
+{
+    <MatButton OnClick="PostComment">Post comment</MatButton>
+    <MatButton OnClick="PostCommentOnCurrentVisit">Post comment on current visit</MatButton>
+    <MatButton OnClick="ShowDiscussion">Discussion</MatButton>
+
+    if (showDiscussion)
+    {
+        <ul level="0">
+            @foreach (var comment in CurrentReview.Comments)
+            {
+                <CommentItem CommentNode=@comment Level=1 @key=comment CurrentReview="CurrentReview" />
+            }
+        </ul>
     }
-    <p>
-        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-2"><MatButton @onclick="@(() => PostComment(visit))"> Post comment </MatButton></div>
-    </p>
-</MatExpansionPanelDetails>
-        </MatExpansionPanel>
-    }
-</MatAccordion>*@
+}
 
 @page "/review/{id}"
-@using Newtonsoft.Json
-@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Blazored.SessionStorage
 @using TravelManagerFE.Data.Models
-@using System.Threading
+@using Newtonsoft.Json
 
 @inject TripService TripService
-@inject Blazored.SessionStorage.ISessionStorageService SessionStorage
+@inject ISessionStorageService SessionStorage
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
 
 @code {
     [Parameter]
     public string Id { get; set; }
     public Trip Trip { get; set; }
     public User CurrentUser { get; set; }
-    public Data.Models.Review CurrentReview { get; set; }
+    public Review CurrentReview { get; set; }
     IList<Comment> ExpandedNodes = new List<Comment>();
     Comment selectedNode;
     public Visit ReviewingVisit { get; set; }
+    bool showOnMap { get; set; }
+    bool showDiscussion { get; set; }
+
+    private string acceptButtonStyle { get; set; }
+    private string updateButtonStyle { get; set; }
+    private string rejectButtonStyle { get; set; }
 
     [CascadingParameter] public IModalService Modal { get; set; }
 
@@ -160,31 +161,38 @@
         var user = await SessionStorage.GetItemAsync<string>("user");
         CurrentUser = JsonConvert.DeserializeObject<User>(user);
 
-        var reviewRequest = new ReviewRequest
-        {
-            ApprovalStatus = "not approved",
-            Text = "",
-            TripId = Id,
-            UserId = CurrentUser.Id
-        };
+        var review = TripService.GetReviewBy(Id);
 
-        var reviews = TripService.GetReviewBy(Id);
+        Trip = TripService.GetTrip(review.Trip.Id);
 
-        Trip.Reviews = reviews;
+        Trip.Reviews.Add(review);
 
-        var currentUserReview = reviews.FirstOrDefault(r => r.User.Id == CurrentUser.Id);
-
-        CurrentReview = currentUserReview == null ? TripService.CreateReview(reviewRequest) : currentUserReview;
+        CurrentReview = review;
     }
 
+    public async void PostStatus(MouseEventArgs e, ReviewStatus reviewStatus)
+    {
+        var statusRequest = new ReviewStatusRequest
+        {
+            ReviewId = CurrentReview.Id,
+            CreatorId = CurrentUser.Id,
+            ReviewStatus = reviewStatus.ToString()
+        };
 
+        CurrentReview = TripService.AddReviewStatus(statusRequest);
 
-    private async void PostComment(Visit visit)
+        StateHasChanged();
+    }
+
+    public async void PostComment()
     {
         var parameters = new ModalParameters();
-        parameters.Add(nameof(visit), visit);
+        parameters.Add(nameof(ReviewingVisit), ReviewingVisit);
         var formModal = Modal.Show<CreateComment>("Add comment", parameters);
         var result = await formModal.Result;
+
+        var currentlyLoggedIn = await ((CustomAuthenticationStateProvider)AuthenticationStateProvider).GetCurrentUser();
+
         if (result.Data == null)
         {
             return;
@@ -192,18 +200,49 @@
         var comment = result.Data.ToString();
         var commentRequest = new CommentRequest
         {
-            VisitId = visit.Id,
             ReviewId = CurrentReview.Id,
-            Text = comment
+            Text = comment,
+            CreatorId = currentlyLoggedIn.Id
         };
 
-        CurrentReview = TripService.PostComment(CurrentReview.Id, Trip.Id, commentRequest);
+        CurrentReview = TripService.PostComment(CurrentReview.Id, commentRequest);
 
-        var reviews = TripService.GetReviewBy(Id);
+        var review = TripService.GetReviewBy(Id);
 
-        Trip.Reviews = reviews;
+        Trip.Reviews.Add(review);
 
-        this.StateHasChanged();
+        StateHasChanged();
+    }
+
+    public async void PostCommentOnCurrentVisit()
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(ReviewingVisit), ReviewingVisit);
+        var formModal = Modal.Show<CreateComment>("Add comment on visit", parameters);
+        var result = await formModal.Result;
+
+        var currentlyLoggedIn = await ((CustomAuthenticationStateProvider)AuthenticationStateProvider).GetCurrentUser();
+
+        if (result.Data == null)
+        {
+            return;
+        }
+        var comment = result.Data.ToString();
+        var commentRequest = new CommentRequest
+        {
+            VisitId = ReviewingVisit.Id,
+            ReviewId = CurrentReview.Id,
+            Text = comment,
+            CreatorId = currentlyLoggedIn.Id
+        };
+
+        CurrentReview = TripService.PostComment(CurrentReview.Id, commentRequest);
+
+        var review = TripService.GetReviewBy(Id);
+
+        Trip.Reviews.Add(review);
+
+        StateHasChanged();
     }
 
     private List<Comment> GetTripDestinationComments(string visitId)
@@ -217,7 +256,7 @@
 
         foreach (var review in Trip.Reviews)
         {
-            foreach (var comment in review.Comments.Where(comment => comment.Visit.Id == visitId))
+            foreach (var comment in review.Comments.Where(comment => comment.Visit != null && comment.Visit.Id == visitId))
             {
                 comment.Creator = review.User;
                 commentList.Add(comment);
@@ -229,7 +268,118 @@
 
     private void PopulateReview(MouseEventArgs mouseEventArgs, Visit visit)
     {
+        ReviewingVisit = new Visit();
+        showOnMap = false;
+        showDiscussion = false;
+        StateHasChanged();
         ReviewingVisit = visit;
+        ReviewingVisit.Location.Type = TranslateType(visit.Location.Type);
+    }
+
+    private void ShowOnMap()
+    {
+        showOnMap = !showOnMap;
+    }
+
+    private void ShowDiscussion()
+    {
+        showDiscussion = !showDiscussion;
+    }
+
+    public enum ElementTypes
+    {
+        Title,
+        Type,
+        Address,
+        Arrival,
+        Departure,
+        Latitude,
+        Longtitude
+    }
+
+    private static string TranslateType(string locationType)
+    {
+        switch (locationType)
+        {
+            case "geos":
+            case "Geographical object":
+                return "Geographical object";
+            case "lodging":
+            case "Lodging":
+                return "Lodging";
+            case "things_to_do":
+            case "Things to do":
+                return "Things to do";
+            default:
+                return "Not defined";
+        }
+    }
+
+    private bool IsButtonToggled(ReviewStatus approved)
+    {
+        if (CurrentReview == null || CurrentReview.Approvals == null || !CurrentReview.Approvals.Any())
+        {
+            return false;
+        }
+
+        var approval = CurrentReview.Approvals.OrderByDescending(a => a.CreatedDate).FirstOrDefault(a => a.User.Id == CurrentUser.Id);
+
+        if (approval == null)
+        {
+            return false;
+        }
+
+        switch (approval.Status)
+        {
+            case ReviewStatus.Approved:
+                if (approved == ReviewStatus.Approved)
+                {
+                    return true;
+                }
+                break;
+            case ReviewStatus.NeedsWork:
+                if (approved == ReviewStatus.NeedsWork)
+                {
+                    //TODO style fixup on status change
+                    return true;
+                }
+                break;
+            case ReviewStatus.Rejected:
+                if (approved == ReviewStatus.Rejected)
+                {
+                    return true;
+                }
+                break;
+            default:
+                return false;
+        }
+
+        return false;
+    }
+
+    private void SetApproveButtonStyle()
+    {
+        acceptButtonStyle = "background-color: coral;border-style: solid;border-width: thin;";
+    }
+
+    private void SetNeedsWorkButtonStyle()
+    {
+        acceptButtonStyle = "background-color: coral;border-style: solid;border-width: thin;";
+    }
+
+    private void SetRejectButtonStyle()
+    {
+        acceptButtonStyle = "background-color: coral;border-style: solid;border-width: thin;";
+    }
+
+    private int CountTripVisits()
+    {
+        return CurrentReview.Comments.Sum(CalculateChildComments);
+    }
+
+    private int CalculateChildComments(Comment parent)
+    {
+        return parent.ChildComments.Sum(comment => CalculateChildComments(comment));
     }
 
 }

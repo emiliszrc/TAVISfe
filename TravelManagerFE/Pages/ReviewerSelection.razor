@@ -1,0 +1,55 @@
+﻿@using TravelManagerFE.Data.Models
+@using System.Collections.Generic
+@using System.Linq
+@using Microsoft.AspNetCore.Components
+@using System.Threading.Tasks
+<h3>ReviewerSelection</h3>
+
+<MatAccordion>
+    <MatList style="height: 300px; overflow: scroll; overflow-x: hidden;" TwoLine="true">
+        @foreach (var selectedReviewer in selectedReviewers)
+        {
+            <MatListItem>
+                <span><MatCheckbox @bind-Value="@selectedReviewer.Selected"></MatCheckbox> @selectedReviewer.User.Name @selectedReviewer.User.Surname</span>
+            </MatListItem>
+        }
+    </MatList>
+</MatAccordion>
+<div>
+    <MatButton @onclick="@(() => Submit())">Submit</MatButton>
+</div>
+
+@code {
+    public List<Reviewing> selectedReviewers { get; set; }
+    [Parameter]
+    public List<Contract> reviewers { get; set; }
+    [CascadingParameter]
+    BlazoredModalInstance BlazoredModal { get; set; }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        selectedReviewers = reviewers.Select(Reviewing.From).ToList();
+    }
+
+    async Task Submit()
+    {
+        await BlazoredModal.Close(ModalResult.Ok<List<Reviewing>>(selectedReviewers));
+    }
+
+    public class Reviewing
+    {
+        public static Reviewing From(Contract c)
+        {
+            return new Reviewing
+            {
+                Selected = false,
+                User = c.User,
+                Id = c.Id
+            };
+        }
+        public string Id { get; set; }
+        public bool Selected { get; set; }
+        public User User { get; set; }
+    }
+}

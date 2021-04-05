@@ -1,56 +1,80 @@
 ﻿@using TravelManagerFE.Data
 @using Newtonsoft.Json
+@using Blazored.SessionStorage
 
 @page "/tripList"
 
 <AuthorizeView>
     <Authorized>
         <div>
-            <h3>Trip List</h3>
-            <button @onclick="CreateTrip">Create new</button>
+            <h3>Trip List <MatButton @onclick="CreateTrip">Create new</MatButton> </h3>
+
         </div>
 
-        @inject NavigationManager NavigationManager
-        @inject TripService TripService
-
         <div>
-            @if (trips.Any())
-            {
-                
+            <MatTabGroup>
                 @if (currentUser != null)
                 {
-                    <table>
-                        <tr>
-                            <th>Title</th>
-                            <th>Type</th>
-                            <th>Cost</th>
-                            <th></th>
-                        </tr>
-                        @foreach (var trip in trips.Where(t => t.Creator.Id == currentUser.Id))
-                        {
-                            <tr class="trip-table-row">
-                                <td>@trip.Title</td>
-                                <td>@trip.Type</td>
-                                <td>@trip.Cost</td>
-                                <td><button @onclick="@(() => GetDetails(trip))">Details</button></td>
-                            </tr>
-                        }
-                    </table>
+                    <MatTab Label="Your trips">
 
-                    @*<b>Organisation trips</b>
-                    <table>
-                        @foreach (var trip in trips.Where(t => t.Creator.Id != currentUser.Id))
+                        <p></p>
+                        @if (trips.Any(t => t.Creator.Id == currentUser.Id))
                         {
-                            <tr class="trip-table-row">
-                                <td>@trip.Title</td>
-                                <td>@trip.Type</td>
-                                <td>@trip.Cost</td>
-                                <td><button @onclick="@(() => GetDetails(trip))">Details</button></td>
-                            </tr>
+                            <table>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Creator</th>
+                                    <th>Organisation</th>
+                                    <th></th>
+                                </tr>
+                                @foreach (var trip in trips.Where(t => t.Creator.Id == currentUser.Id))
+                                {
+                                    <tr class="trip-table-row">
+                                        <td>@trip.Title</td>
+                                        <td>@trip.Creator.Name @trip.Creator.Surname</td>
+                                        <td>@trip.Organisation?.Title</td>
+                                        <td><MatButton @onclick="@(() => GetDetails(trip))">Details</MatButton></td>
+                                    </tr>
+                                }
+                            </table>
                         }
-                    </table>*@
+                        else
+                        {
+                            <p></p>
+                            <p>No trips created by you</p>
+                        }
+                    </MatTab>
+                    <MatTab Label="Organization trips">
+                        <p></p>
+                        @if (trips.Any(t => t.Creator.Id != currentUser.Id))
+                        {
+
+                            <table>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Creator</th>
+                                    <th>Organisation</th>
+                                    <th></th>
+                                </tr>
+                                @foreach (var trip in trips.Where(t => t.Creator.Id != currentUser.Id))
+                                {
+                                    <tr class="trip-table-row">
+                                        <td>@trip.Title</td>
+                                        <td>@trip.Creator.Name @trip.Creator.Surname</td>
+                                        <td>@trip.Organisation?.Title</td>
+                                        <td><MatButton @onclick="@(() => GetDetails(trip))">Details</MatButton></td>
+                                    </tr>
+                                }
+                            </table>
+                        }
+                        else
+                        {
+                            <p></p>
+                            <p>No trips created by your organization members</p>
+                        }
+                    </MatTab>
                 }
-            }
+            </MatTabGroup>
         </div>
     </Authorized>
     <NotAuthorized>
@@ -59,19 +83,24 @@
 </AuthorizeView>
 
 @inject AuthenticationStateProvider AuthenticationStateProvider;
-@inject Blazored.SessionStorage.ISessionStorageService SessionStorage
+@inject NavigationManager NavigationManager
+@inject TripService TripService
+@inject ISessionStorageService sessionStorageService;
 
 @code {
     private List<Trip> trips = new List<Trip>();
-    private User currentUser;
+    private User currentUser = null;
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
         trips = TripService.GetTrips();
+        var user = await sessionStorageService.GetItemAsync<string>("user");
 
-        var user = await SessionStorage.GetItemAsync<string>("user");
-        currentUser = JsonConvert.DeserializeObject<User>(user);
+        if (user != null)
+        {
+            currentUser = JsonConvert.DeserializeObject<User>(user);
+        }
     }
 
     private void GetDetails(Trip trip)

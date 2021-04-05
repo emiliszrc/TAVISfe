@@ -16,6 +16,6 @@ namespace TravelManagerFE.Data.Models
         public DateTime Arrival { get; set; }
         public DateTime Departure { get; set; }
         public Location Location { get; set; }
-        public string TripId { get; set; }
+        public Trip Trip { get; set; }
     }
 }

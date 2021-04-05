@@ -59,6 +59,16 @@ namespace TravelManagerFE
                 .AddFontAwesomeIcons();
             var componentMapper = new ComponentMapper(); 
             services.AddSingleton<IComponentMapper>(componentMapper);
+            services.AddScoped<ReplyCollapseNotifier>();
+            services.AddMatToaster(config =>
+            {
+                config.Position = MatToastPosition.BottomRight;
+                config.PreventDuplicates = true;
+                config.NewestOnTop = true;
+                config.ShowCloseButton = true;
+                config.MaximumOpacity = 95;
+                config.VisibleStateDuration = 3000;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
