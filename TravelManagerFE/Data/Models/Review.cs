@@ -26,6 +26,16 @@ namespace TravelManagerFE.Data.Models
         public List<Approval> Approvals { get; set; }
 
         public List<Reviewer> Reviewers { get; set; }
+
+        public List<Warning> Warnings { get; set; }
+    }
+
+    public class Warning
+    {
+        public string WarningCode { get; set; }
+        public string WarningText { get; set; }
+        public bool IsBlocker { get; set; }
+        public Visit Visit { get; set; }
     }
 
     public class Reviewer

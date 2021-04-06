@@ -30,97 +30,113 @@
             </MatMenu>
         }*@
 </div>
-<div class="mat-layout-grid">
-    <div class="mat-layout-grid-inner">
-        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
-            @if (Trip != null)
-            {
-                <h4>@Trip.Visits.Count destination(s)</h4>
-                <MatAccordion>
-                    <MatList style="height: 300px; overflow: scroll; overflow-x: hidden;" TwoLine="true">
-                        @foreach (var visit in Trip.Visits)
+
+<MatTabGroup>
+    <MatTab Label="Fields">
+        <div class="mat-layout-grid">
+            <div class="mat-layout-grid-inner">
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
+                    <div>
+                        @if (Trip != null)
                         {
-                            <MatListItem OnClick="@(e => PopulateReview(e, visit))">
-                                <MatListItemText>
-                                    <MatListItemPrimaryText>
-                                        @visit.Location.Title
-                                    </MatListItemPrimaryText>
-                                    <MatListItemSecondaryText>
-                                        @GetTripDestinationComments(visit.Id).Count comment(s)
-                                    </MatListItemSecondaryText>
-                                </MatListItemText>
-                            </MatListItem>
-                            <MatDivider></MatDivider>
+                            <h4>@Trip.Visits.Count destination(s)</h4>
+                            <MatAccordion>
+                                <MatList style="height: 300px; overflow: scroll; overflow-x: hidden;" TwoLine="true">
+                                    @foreach (var visit in Trip.Visits)
+                                    {
+                                        <MatListItem OnClick="@(e => PopulateReview(e, visit))">
+                                            <MatListItemText>
+                                                <MatListItemPrimaryText>
+                                                    @visit.Location.Title
+                                                </MatListItemPrimaryText>
+                                                <MatListItemSecondaryText>
+                                                    @GetTripDestinationComments(visit.Id).Count comment(s)
+                                                </MatListItemSecondaryText>
+                                            </MatListItemText>
+                                        </MatListItem>
+                                        <MatDivider></MatDivider>
+                                    }
+                                </MatList>
+                            </MatAccordion>
                         }
-                    </MatList>
-                </MatAccordion>
-            }
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="mat-layout-grid-cell mat-layout-grid-cell-span-9">
             @if (ReviewingVisit != null)
             {
-                <MatTabGroup>
-                    <MatTab Label="Fields">
-                        <div class="mat-layout-grid-inner mat-layout-grid-cell-span-13" style="padding: 20px 10px;">
-                            <div class="mat-layout-grid-cell">
-                                <EditForm Model="ReviewingVisit.Location">
-                                    <p>
-                                        <MatTextField @bind-Value="ReviewingVisit.Location.Title" IconTrailing="true" Style="" ReadOnly="true" HelperText="Helper Text" Label="Title" FullWidth="true"> </MatTextField>
-                                    </p>
-                                    <p>
-                                        <MatTextField @bind-Value="ReviewingVisit.Location.Type" IconTrailing="true" Style="" ReadOnly="true" HelperText="Helper Text" Label="Title" FullWidth="true"> </MatTextField>
-                                    </p>
-                                    <p>
-                                        <MatTextField @bind-Value="ReviewingVisit.Location.Address" IconTrailing="true" ReadOnly="true" HelperText="" Label="Address" Style="" FullWidth="true"></MatTextField>
-                                    </p>
-                                    <p>
-                                        <MatButton></MatButton>
-                                    </p>
-                                </EditForm>
-                            </div>
-                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-2">
+                <div class="mat-layout-grid-inner mat-layout-grid-cell-span-13" style="padding: 20px 10px;">
+                    <div class="mat-layout-grid-cell">
+                        <EditForm Model="ReviewingVisit.Location">
+                            <p>
+                                <MatTextField @bind-Value="ReviewingVisit.Location.Title" IconTrailing="true" Style="" ReadOnly="true" HelperText="Helper Text" Label="Title" FullWidth="true"> </MatTextField>
+                            </p>
+                            <p>
+                                <MatTextField @bind-Value="ReviewingVisit.Location.Type" IconTrailing="true" Style="" ReadOnly="true" HelperText="Helper Text" Label="Title" FullWidth="true"> </MatTextField>
+                            </p>
+                            <p>
+                                <MatTextField @bind-Value="ReviewingVisit.Location.Address" IconTrailing="true" ReadOnly="true" HelperText="" Label="Address" Style="" FullWidth="true"></MatTextField>
+                            </p>
+                            <p>
+                                <MatButton></MatButton>
+                            </p>
+                        </EditForm>
+                    </div>
+                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-2">
 
-                                <EditForm Model="ReviewingVisit">
-                                    <p>
-                                        <MatTextField @bind-Value="ReviewingVisit.Arrival" Style="" IconTrailing="true" ReadOnly="true" HelperText="Helper Text" Label="Arrival" FullWidth="true"></MatTextField>
-                                    </p>
-                                    <p>
-                                        <MatTextField @bind-Value="ReviewingVisit.Departure" Style="" IconTrailing="true" ReadOnly="true" HelperText="Helper Text" Label="Departure" FullWidth="true"></MatTextField>
-                                    </p>
-                                    <p>
-                                        <MatTextField @bind-Value="ReviewingVisit.Location.Latitude" IconTrailing="true" Style="" ReadOnly="true" HelperText="Helper Text" Label="Latitude" FullWidth="true"></MatTextField>
-                                    </p>
-                                    <p>
-                                        <MatTextField @bind-Value="ReviewingVisit.Location.Longtitude" IconTrailing="true" Style="" ReadOnly="true" HelperText="Helper Text" Label="Longtitude" FullWidth="true"></MatTextField>
-                                    </p>
-                                </EditForm>
-                            </div>
-                        </div>
-                    </MatTab>
-                    <MatTab Label="Warnings">
-
-                    </MatTab>
-                </MatTabGroup>
-
+                        <EditForm Model="ReviewingVisit">
+                            <p>
+                                <MatTextField @bind-Value="ReviewingVisit.Arrival" Style="" IconTrailing="true" ReadOnly="true" HelperText="Helper Text" Label="Arrival" FullWidth="true"></MatTextField>
+                            </p>
+                            <p>
+                                <MatTextField @bind-Value="ReviewingVisit.Departure" Style="" IconTrailing="true" ReadOnly="true" HelperText="Helper Text" Label="Departure" FullWidth="true"></MatTextField>
+                            </p>
+                            <p>
+                                <MatTextField @bind-Value="ReviewingVisit.Location.Latitude" IconTrailing="true" Style="" ReadOnly="true" HelperText="Helper Text" Label="Latitude" FullWidth="true"></MatTextField>
+                            </p>
+                            <p>
+                                <MatTextField @bind-Value="ReviewingVisit.Location.Longtitude" IconTrailing="true" Style="" ReadOnly="true" HelperText="Helper Text" Label="Longtitude" FullWidth="true"></MatTextField>
+                            </p>
+                        </EditForm>
+                    </div>
+                </div>
             }
         </div>
-    </div>
-</div>
+    </MatTab>
+    <MatTab Label="Warnings">
+        @if (CurrentReview != null && CurrentReview.Warnings.Any())
+        {
+            <MatTable Items="CurrentReview.Warnings">
+                <MatTableRow Context="ctx">
+                    <td>@ctx.WarningText</td>
+                </MatTableRow>
+            </MatTable>
+        }
+        else
+        {
+            <p>No warnings occured during submission</p>
+        }
+    </MatTab>
+</MatTabGroup>
+
+<MatButton OnClick="PostComment">Post comment</MatButton>
+<MatButton OnClick="ShowDiscussion">Discussion</MatButton>
+
+
 @if (ReviewingVisit != null)
 {
-    <MatButton OnClick="PostComment">Post comment</MatButton>
     <MatButton OnClick="PostCommentOnCurrentVisit">Post comment on current visit</MatButton>
-    <MatButton OnClick="ShowDiscussion">Discussion</MatButton>
 
-    if (showDiscussion)
-    {
-        <ul level="0">
-            @foreach (var comment in CurrentReview.Comments)
-            {
-                <CommentItem CommentNode=@comment Level=1 @key=comment CurrentReview="CurrentReview" />
-            }
-        </ul>
-    }
+}
+@if (showDiscussion)
+{
+    <ul level="0">
+        @foreach (var comment in CurrentReview.Comments)
+        {
+            <CommentItem CommentNode=@comment Level=1 @key=comment CurrentReview="CurrentReview" />
+        }
+    </ul>
 }
 
 @page "/review/{id}"

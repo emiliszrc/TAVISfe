@@ -126,19 +126,16 @@
     </div>
     <MatDivider></MatDivider>
 </Dropzone>
-<div class="mat-layout-grid mat-layout-grid-align-left" style="max-width: 800px;">
-    <div class="mat-layout-grid-inner">
-        <div class="mat-layout-grid-cell">
-            <MatButton @onclick="SaveDestinationOrder">Save destination order</MatButton>
-        </div>
-        <div class="mat-layout-grid-cell">
-            <MatButton @onclick="DisplayMapRoutes">Show On Map</MatButton>
-        </div>
-    </div>
-</div>
+<MatButton @onclick="SaveDestinationOrder">Save destination order</MatButton>
+<MatButton @onclick="DisplayMapRoutes">Show On Map</MatButton>
 
 <MatButton @onclick="DisplayDestinationSearch">Add new visit</MatButton>
-<MatButton @onclick="SubmitForReview">Submit for review</MatButton>
+<MatButton @onclick="ValidateTrip">Validate trip</MatButton>
+
+@if (validity != null && validity.IsValid)
+{
+    <MatButton @onclick="SubmitForReview">Submit for review</MatButton>
+}
 
 @if (DestinationSearchShown)
 {
@@ -226,24 +223,7 @@
 
     private async void SubmitForReview()
     {
-        if (validity == null || !(validity !=null && validity.IsValid && IgnoreWarnings))
-        {
-            validity = TripService.GetTripValidity(trip.Id);
-
-            if (validity != null)
-            {
-                if (validity.IsValid)
-                {
-                    ShowToast("Please review listed warnings", MatToastType.Info, "Trip submission resulted in warnings", true);
-                    return;
-                }
-
-                ShowToast("Please review listed errors", MatToastType.Warning, "Trip submission resulted in errors", true);
-                return;
-            }
-        }
-
-        var reviewers = OrganisationService.getPublicOrganisations().FirstOrDefault().Contracts;
+        var reviewers = OrganisationService.GetById(trip.Organisation.Id).Contracts.Where(c=>c.User.Id != trip.Creator.Id).ToList();
 
         var parameters = new ModalParameters();
         parameters.Add(nameof(reviewers), reviewers);
@@ -286,5 +266,25 @@
                 config.Onclick = toast => Task.CompletedTask;
             }
         });
+    }
+
+    private void ValidateTrip()
+    {
+        if (validity == null || !(validity != null && validity.IsValid && IgnoreWarnings))
+        {
+            validity = TripService.GetTripValidity(trip.Id);
+
+            if (validity != null)
+            {
+                if (validity.IsValid)
+                {
+                    ShowToast("Please review listed warnings", MatToastType.Info, "Trip submission resulted in warnings", true);
+                    return;
+                }
+
+                ShowToast("Please review listed errors", MatToastType.Warning, "Trip submission resulted in errors", true);
+                return;
+            }
+        }
     }
 }

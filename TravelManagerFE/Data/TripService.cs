@@ -252,7 +252,102 @@ namespace TravelManagerFE.Data
 
         public List<Review> GetReviewsByUserId(string userId)
         {
-            var client = new RestClient(baseUrl + $"Reviews/by-user/");
+            var client = new RestClient(baseUrl + $"Reviews/by-user/forApproval");
+            var request = new RestRequest(Method.GET);
+            request.AddHeader("content-type", "application/json");
+            request.AddQueryParameter("userId", userId);
+
+            var response = client.Execute(request);
+
+            if (!response.StatusCode.Equals(System.Net.HttpStatusCode.OK))
+            {
+                //throw new TripAdvisorApiException($"Could not retrieve information from TripAdvisor. Response code: {response.StatusCode}");
+            }
+
+            var reviewResponse = JsonConvert.DeserializeObject<List<Review>>(response.Content);
+
+            return reviewResponse;
+        }
+
+        public List<Review> GetAlreadyApprovedReviewsByUserId(string userId)
+        {
+            var client = new RestClient(baseUrl + $"Reviews/by-user/alreadyApproved");
+            var request = new RestRequest(Method.GET);
+            request.AddHeader("content-type", "application/json");
+            request.AddQueryParameter("userId", userId);
+
+            var response = client.Execute(request);
+
+            if (!response.StatusCode.Equals(System.Net.HttpStatusCode.OK))
+            {
+                //throw new TripAdvisorApiException($"Could not retrieve information from TripAdvisor. Response code: {response.StatusCode}");
+            }
+
+            var reviewResponse = JsonConvert.DeserializeObject<List<Review>>(response.Content);
+
+            return reviewResponse;
+        }
+
+        public List<Review> GetClosedReviewsByUserId(string userId)
+        {
+            var client = new RestClient(baseUrl + $"Reviews/by-user/closed");
+            var request = new RestRequest(Method.GET);
+            request.AddHeader("content-type", "application/json");
+            request.AddQueryParameter("userId", userId);
+
+            var response = client.Execute(request);
+
+            if (!response.StatusCode.Equals(System.Net.HttpStatusCode.OK))
+            {
+                //throw new TripAdvisorApiException($"Could not retrieve information from TripAdvisor. Response code: {response.StatusCode}");
+            }
+
+            var reviewResponse = JsonConvert.DeserializeObject<List<Review>>(response.Content);
+
+            return reviewResponse;
+        }
+
+        public List<Review> GetReviewsByCreatorId(string userId)
+        {
+            var client = new RestClient(baseUrl + $"Reviews/by-creator/forApproval");
+            var request = new RestRequest(Method.GET);
+            request.AddHeader("content-type", "application/json");
+            request.AddQueryParameter("userId", userId);
+
+            var response = client.Execute(request);
+
+            if (!response.StatusCode.Equals(System.Net.HttpStatusCode.OK))
+            {
+                //throw new TripAdvisorApiException($"Could not retrieve information from TripAdvisor. Response code: {response.StatusCode}");
+            }
+
+            var reviewResponse = JsonConvert.DeserializeObject<List<Review>>(response.Content);
+
+            return reviewResponse;
+        }
+
+        public List<Review> GetAlreadyApprovedReviewsByCreatorId(string userId)
+        {
+            var client = new RestClient(baseUrl + $"Reviews/by-creator/alreadyApproved");
+            var request = new RestRequest(Method.GET);
+            request.AddHeader("content-type", "application/json");
+            request.AddQueryParameter("userId", userId);
+
+            var response = client.Execute(request);
+
+            if (!response.StatusCode.Equals(System.Net.HttpStatusCode.OK))
+            {
+                //throw new TripAdvisorApiException($"Could not retrieve information from TripAdvisor. Response code: {response.StatusCode}");
+            }
+
+            var reviewResponse = JsonConvert.DeserializeObject<List<Review>>(response.Content);
+
+            return reviewResponse;
+        }
+
+        public List<Review> GetClosedReviewsByCreatorId(string userId)
+        {
+            var client = new RestClient(baseUrl + $"Reviews/by-creator/closed");
             var request = new RestRequest(Method.GET);
             request.AddHeader("content-type", "application/json");
             request.AddQueryParameter("userId", userId);

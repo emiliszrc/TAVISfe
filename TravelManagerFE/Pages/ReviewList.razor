@@ -12,38 +12,126 @@
         <div>
             @if (isEligibleForReviews)
             {
-                @if (reviews.Any())
-                {
-
-                    @if (currentUser != null)
-                    {
-                        <table>
-                            <tr>
-                                <th>Title</th>
-                                <th>Type</th>
-                                <th>Cost</th>
-                                <th></th>
-                            </tr>
-                            @foreach (var review in reviews)
+                <MatTabGroup>
+                    <MatTab Label="Awaiting review">
+                        @if (isEligibleForReviews)
+                        {
+                            @if (currentUser != null)
                             {
-                                <tr class="trip-table-row">
-                                    <td>@review.Trip.Title</td>
-                                    <td>@review.Trip.Type</td>
-                                    <td>@review.Trip.Cost</td>
-                                    <td><MatButton @onclick="@(() => GetDetails(review))">Review</MatButton></td>
-                                </tr>
+                                @if (awaitingForApproval.Any())
+                                {
+                                    <MatTable Items="awaitingForApproval" AllowSelection="true" SelectionChanged="SelectionChangedEvent">
+                                        <MatTableHeader>
+                                            <th style="width:25%">Title</th>
+                                            <th style="width:25%">Type</th>
+                                            <th style="width:25%">Cost</th>
+                                        </MatTableHeader>
+                                        <MatTableRow Context="contx">
+                                            <td>@contx.Trip.Title</td>
+                                            <td>@contx.Trip.Type</td>
+                                            <td>@contx.Trip.Cost</td>
+                                        </MatTableRow>
+                                    </MatTable>
+                                }
+                                @if (alreadyApproved.Any())
+                                {
+                                    <MatTable Items="alreadyApproved" AllowSelection="true" SelectionChanged="SelectionChangedEvent">
+                                        <MatTableHeader>
+                                            <th style="width:25%">Title</th>
+                                            <th style="width:25%">Type</th>
+                                            <th style="width:25%">Cost</th>
+                                        </MatTableHeader>
+                                        <MatTableRow Context="contx">
+                                            <td>@contx.Trip.Title</td>
+                                            <td>@contx.Trip.Type</td>
+                                            <td>@contx.Trip.Cost</td>
+                                        </MatTableRow>
+                                    </MatTable>
+                                }
                             }
-                        </table>
-                    }
-                }
-                else
-                {
-                    <p>No reviews available.</p>
-                }
+                        }
+                        else
+                        {
+                            <p>No reviews available.</p>
+                        }
+                    </MatTab>
+                    <MatTab Label="Created">
+                        @if (isEligibleForReviews)
+                        {
+                            @if (ownAwaiting.Any())
+                            {
+                                @if (currentUser != null)
+                                {
+                                    <MatTable Items="ownAwaiting" AllowSelection="true" SelectionChanged="SelectionChangedEvent">
+                                        <MatTableHeader>
+                                            <th style="width:25%">Title</th>
+                                            <th style="width:25%">Type</th>
+                                            <th style="width:25%">Cost</th>
+                                        </MatTableHeader>
+                                        <MatTableRow Context="contx">
+                                            <td>@contx.Trip.Title</td>
+                                            <td>@contx.Trip.Type</td>
+                                            <td>@contx.Trip.Cost</td>
+                                        </MatTableRow>
+                                    </MatTable>
+                                }
+                            }
+                            else
+                            {
+                                <p>No reviews available.</p>
+                            }
+                        }
+                    </MatTab>
+                    <MatTab Label="History">
+                        @if (isEligibleForReviews)
+                        {
+                            @if (ownClosed.Any() || closed.Any())
+                            {
+                                @if (currentUser != null)
+                                {
+                                        @if (ownClosed.Any())
+                                        {
+                                            <MatTable Items="ownClosed" AllowSelection="true" SelectionChanged="SelectionChangedEvent">
+                                                <MatTableHeader>
+                                                    <th style="width:25%">Title</th>
+                                                    <th style="width:25%">Type</th>
+                                                    <th style="width:25%">Cost</th>
+                                                </MatTableHeader>
+                                                <MatTableRow Context="contx">
+                                                    <td>@contx.Trip.Title</td>
+                                                    <td>@contx.Trip.Type</td>
+                                                    <td>@contx.Trip.Cost</td>
+                                                </MatTableRow>
+                                            </MatTable>
+                                        }
+                                        @if (closed.Any())
+                                        {
+                                            <MatTable Items="closed" AllowSelection="true" SelectionChanged="SelectionChangedEvent">
+                                                <MatTableHeader>
+                                                    <th style="width:25%">Title</th>
+                                                    <th style="width:25%">Type</th>
+                                                    <th style="width:25%">Cost</th>
+                                                </MatTableHeader>
+                                                <MatTableRow Context="contx">
+                                                    <td>@contx.Trip.Title</td>
+                                                    <td>@contx.Trip.Type</td>
+                                                    <td>@contx.Trip.Cost</td>
+                                                </MatTableRow>
+                                            </MatTable>
+                                        }
+                                }
+                            }
+                            else
+                            {
+                                <p>No reviews available.</p>
+                            }
+                        }
+                    </MatTab>
+                </MatTabGroup>
             }
             else
             {
-                <p>You do not belong to any organization.</p>
+                <p>You do not belong to any organisation.</p>
             }
         </div>
     </Authorized>
@@ -57,7 +145,12 @@
 @inject NavigationManager NavigationManager
 
 @code {
-    public List<Review> reviews = new List<Review>();
+    public List<Review> awaitingForApproval = new List<Review>();
+    public List<Review> alreadyApproved = new List<Review>();
+    public List<Review> closed = new List<Review>();
+    public List<Review> ownAwaiting = new List<Review>();
+    public List<Review> ownAlreadyApproved = new List<Review>();
+    public List<Review> ownClosed = new List<Review>();
     public User currentUser;
     public bool isEligibleForReviews = true;
 
@@ -68,7 +161,15 @@
         var user = await SessionStorage.GetItemAsync<string>("user");
         currentUser = JsonConvert.DeserializeObject<User>(user);
 
-        reviews = TripService.GetReviewsByUserId(currentUser.Id);
+        awaitingForApproval = TripService.GetReviewsByUserId(currentUser.Id);
+        alreadyApproved = TripService.GetAlreadyApprovedReviewsByUserId(currentUser.Id);
+        closed = TripService.GetClosedReviewsByUserId(currentUser.Id);
+
+        ownAwaiting = TripService.GetReviewsByCreatorId(currentUser.Id);
+        ownAlreadyApproved = TripService.GetAlreadyApprovedReviewsByCreatorId(currentUser.Id);
+        ownClosed = TripService.GetClosedReviewsByCreatorId(currentUser.Id);
+
+        ownAwaiting.AddRange(ownAlreadyApproved);
         isEligibleForReviews = currentUser.Contracts.Any();
 
         this.StateHasChanged();
@@ -77,6 +178,20 @@
     private void GetDetails(Review review)
     {
         NavigationManager.NavigateTo($"review/{review.Id}");
+    }
+
+    private void SelectionChangedEvent(object obj)
+    {
+        if (obj == null)
+        {
+
+        }
+        else
+        {
+            NavigationManager.NavigateTo($"review/{((Review)obj).Id}");
+        }
+
+        this.StateHasChanged();
     }
 
 }

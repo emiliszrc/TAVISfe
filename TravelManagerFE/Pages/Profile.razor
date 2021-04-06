@@ -2,12 +2,15 @@
 @page "/profile"
 @using TravelManagerFE.Data.Models
 @using System.Linq
+@using Blazored.SessionStorage
+@using Newtonsoft.Json
 
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserService userService
 @inject OrganisationService organisationService
 @inject IMatToaster Toaster
+@inject ISessionStorageService SessionStorageService
 
 <MatTabGroup>
     <MatTab Label="Settings">
@@ -140,7 +143,7 @@
         });
     }
 
-    private void AcceptInvite(Invite invite)
+    private async Task AcceptInvite(Invite invite)
     {
         var inviteRequest = new InviteResponseRequest
         {
@@ -155,6 +158,13 @@
         if (respo != null)
         {
             ShowToast($"Successfully joined {invite.Organisation.Title}", MatToastType.Info, "Success", false);
+            await ((CustomAuthenticationStateProvider) AuthenticationStateProvider).MarkUserAsLoggedOut();
+            var user = await userService.GetByUsername(User.Username);
+            User = user;
+            ((CustomAuthenticationStateProvider)AuthenticationStateProvider).MarkUserAsAuthenticated(User);
+
+            var serialized = JsonConvert.SerializeObject(User);
+            await SessionStorageService.SetItemAsync("user", serialized);
         }
         else
         {

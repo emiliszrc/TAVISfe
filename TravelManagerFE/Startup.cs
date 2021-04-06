@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Blazored.Modal;
 using Blazored.SessionStorage;
@@ -41,6 +42,7 @@ namespace TravelManagerFE
             services.AddSingleton<TripService>();
             services.AddSingleton<UserService>();
             services.AddSingleton<OrganisationService>();
+            services.AddScoped<HttpClient>();
             services.AddBlazoredSessionStorage();
             services.AddMatBlazor();
             services.AddBlazoredModal();
