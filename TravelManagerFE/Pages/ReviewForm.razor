@@ -30,42 +30,52 @@
             </MatMenu>
         }*@
 </div>
+<p>General trip warnings</p>
+@if (CurrentReview != null && CurrentReview.Warnings.Any())
+{
+    <MatTable ShowPaging="CurrentReview.Warnings.Count(w => w.Visit == null) > 5" Items="CurrentReview.Warnings.Where(w=>w.Visit == null)">
+        <MatTableRow Context="ctx">
+            <td>@ctx.WarningText</td>
+        </MatTableRow>
+    </MatTable>
+}
 
-<MatTabGroup>
-    <MatTab Label="Fields">
-        <div class="mat-layout-grid">
-            <div class="mat-layout-grid-inner">
-                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
-                    <div>
-                        @if (Trip != null)
-                        {
-                            <h4>@Trip.Visits.Count destination(s)</h4>
-                            <MatAccordion>
-                                <MatList style="height: 300px; overflow: scroll; overflow-x: hidden;" TwoLine="true">
-                                    @foreach (var visit in Trip.Visits)
-                                    {
-                                        <MatListItem OnClick="@(e => PopulateReview(e, visit))">
-                                            <MatListItemText>
-                                                <MatListItemPrimaryText>
-                                                    @visit.Location.Title
-                                                </MatListItemPrimaryText>
-                                                <MatListItemSecondaryText>
-                                                    @GetTripDestinationComments(visit.Id).Count comment(s)
-                                                </MatListItemSecondaryText>
-                                            </MatListItemText>
-                                        </MatListItem>
-                                        <MatDivider></MatDivider>
-                                    }
-                                </MatList>
-                            </MatAccordion>
-                        }
-                    </div>
-                </div>
+<div class="mat-layout-grid">
+    <div class="mat-layout-grid-inner">
+        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
+            <div>
+                @if (Trip != null)
+                {
+                    <h4>@Trip.Visits.Count destination(s)</h4>
+                    <MatAccordion>
+                        <MatList style="height: 300px; overflow: scroll; overflow-x: hidden;" TwoLine="true">
+                            @foreach (var visit in Trip.Visits)
+                            {
+                                <MatListItem OnClick="@(e => PopulateReview(e, visit))">
+                                    <MatListItemText>
+                                        <MatListItemPrimaryText>
+                                            @visit.Location.Title
+                                        </MatListItemPrimaryText>
+                                        <MatListItemSecondaryText>
+                                            @GetTripDestinationComments(visit.Id).Count comment(s)
+                                        </MatListItemSecondaryText>
+                                    </MatListItemText>
+                                </MatListItem>
+                                <MatDivider></MatDivider>
+                            }
+                        </MatList>
+                    </MatAccordion>
+                }
             </div>
         </div>
-        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-9">
-            @if (ReviewingVisit != null)
-            {
+    </div>
+</div>
+<div class="mat-layout-grid-cell mat-layout-grid-cell-span-9">
+    @if (ReviewingVisit != null)
+    {
+
+        <MatTabGroup>
+            <MatTab Label="Fields">
                 <div class="mat-layout-grid-inner mat-layout-grid-cell-span-13" style="padding: 20px 10px;">
                     <div class="mat-layout-grid-cell">
                         <EditForm Model="ReviewingVisit.Location">
@@ -101,24 +111,26 @@
                         </EditForm>
                     </div>
                 </div>
-            }
-        </div>
-    </MatTab>
-    <MatTab Label="Warnings">
-        @if (CurrentReview != null && CurrentReview.Warnings.Any())
-        {
-            <MatTable Items="CurrentReview.Warnings">
-                <MatTableRow Context="ctx">
-                    <td>@ctx.WarningText</td>
-                </MatTableRow>
-            </MatTable>
-        }
-        else
-        {
-            <p>No warnings occured during submission</p>
-        }
-    </MatTab>
-</MatTabGroup>
+
+
+            </MatTab>
+            <MatTab Label="Warnings">
+                @if (CurrentReview != null && CurrentReview.Warnings.Any(w => w.Visit != null && w.Visit.Id == ReviewingVisit.Id))
+                {
+                    <MatTable ShowPaging="CurrentReview.Warnings.Count(w => w.Visit != null && w.Visit.Id == ReviewingVisit.Id) > 5"Items="CurrentReview.Warnings.Where(w=>w.Visit != null && w.Visit.Id == ReviewingVisit.Id)">
+                        <MatTableRow Context="ctx">
+                            <td>@ctx.WarningText</td>
+                        </MatTableRow>
+                    </MatTable>
+                }
+                else
+                {
+                    <p>No warnings occured during submission</p>
+                }
+            </MatTab>
+        </MatTabGroup>
+    }
+</div>
 
 <MatButton OnClick="PostComment">Post comment</MatButton>
 <MatButton OnClick="ShowDiscussion">Discussion</MatButton>

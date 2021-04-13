@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using TravelManagerFE.Data.Models;
 
 namespace TravelManagerFE.Data
@@ -15,5 +16,13 @@ namespace TravelManagerFE.Data
         public User Creator { get; set; }
         public Organisation Organisation { get; set; }
         public List<Review> Reviews { get; set; } = new List<Review>();
+        public TripStatus TripStatus { get; set; }
+    }
+
+    public enum TripStatus
+    {
+        New,
+        InReview,
+        Final
     }
 }

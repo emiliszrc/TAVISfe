@@ -20,7 +20,7 @@
                             {
                                 @if (awaitingForApproval.Any())
                                 {
-                                    <MatTable Items="awaitingForApproval" AllowSelection="true" SelectionChanged="SelectionChangedEvent">
+                                    <MatTable Items="awaitingForApproval" AllowSelection="true" SelectionChanged="SelectionChangedEvent"  ShowPaging="@(awaitingForApproval.Count > 5)">
                                         <MatTableHeader>
                                             <th style="width:25%">Title</th>
                                             <th style="width:25%">Type</th>
@@ -35,7 +35,7 @@
                                 }
                                 @if (alreadyApproved.Any())
                                 {
-                                    <MatTable Items="alreadyApproved" AllowSelection="true" SelectionChanged="SelectionChangedEvent">
+                                    <MatTable Items="alreadyApproved" AllowSelection="true" SelectionChanged="SelectionChangedEvent"  ShowPaging="@(alreadyApproved.Count > 5)">
                                         <MatTableHeader>
                                             <th style="width:25%">Title</th>
                                             <th style="width:25%">Type</th>
@@ -62,7 +62,7 @@
                             {
                                 @if (currentUser != null)
                                 {
-                                    <MatTable Items="ownAwaiting" AllowSelection="true" SelectionChanged="SelectionChangedEvent">
+                                    <MatTable Items="ownAwaiting" AllowSelection="true" SelectionChanged="SelectionChangedEvent" ShowPaging="@(ownAwaiting.Count > 5)">
                                         <MatTableHeader>
                                             <th style="width:25%">Title</th>
                                             <th style="width:25%">Type</th>
@@ -91,7 +91,7 @@
                                 {
                                         @if (ownClosed.Any())
                                         {
-                                            <MatTable Items="ownClosed" AllowSelection="true" SelectionChanged="SelectionChangedEvent">
+                                            <MatTable Items="ownClosed" AllowSelection="true" SelectionChanged="SelectionChangedEvent" ShowPaging="@(ownClosed.Count > 5)">
                                                 <MatTableHeader>
                                                     <th style="width:25%">Title</th>
                                                     <th style="width:25%">Type</th>
@@ -106,7 +106,7 @@
                                         }
                                         @if (closed.Any())
                                         {
-                                            <MatTable Items="closed" AllowSelection="true" SelectionChanged="SelectionChangedEvent">
+                                            <MatTable Items="closed" AllowSelection="true" SelectionChanged="SelectionChangedEvent" ShowPaging="@(closed.Count > 5)">
                                                 <MatTableHeader>
                                                     <th style="width:25%">Title</th>
                                                     <th style="width:25%">Type</th>
@@ -162,6 +162,7 @@
         currentUser = JsonConvert.DeserializeObject<User>(user);
 
         awaitingForApproval = TripService.GetReviewsByUserId(currentUser.Id);
+
         alreadyApproved = TripService.GetAlreadyApprovedReviewsByUserId(currentUser.Id);
         closed = TripService.GetClosedReviewsByUserId(currentUser.Id);
 

@@ -7,7 +7,7 @@
 <AuthorizeView>
     <Authorized>
         <div>
-            <h3>Trip List <MatButton @onclick="CreateTrip">Create new</MatButton> </h3>
+            <h3>Trip creation <MatButton @onclick="CreateTrip">Create new</MatButton> </h3>
 
         </div>
 
@@ -16,60 +16,65 @@
                 @if (currentUser != null)
                 {
                     <MatTab Label="Your trips">
-
-                        <p></p>
-                        @if (trips.Any(t => t.Creator.Id == currentUser.Id))
+                        @if (trips.Any())
                         {
-                            <table>
-                                <tr>
-                                    <th>Title</th>
-                                    <th>Creator</th>
-                                    <th>Organisation</th>
+                            <MatTable Items="trips" AllowSelection="true" SelectionChanged="GetDetails" ShowPaging="@(trips.Count > 5)">
+                                <MatTableHeader>
+                                    <th style="width:25%">Title</th>
+                                    <th style="width:25%">Creator</th>
+                                    <th style="width:25%">Organisation</th>
+                                    <th style="width:25%">In review</th>
                                     <th></th>
-                                </tr>
-                                @foreach (var trip in trips.Where(t => t.Creator.Id == currentUser.Id))
-                                {
-                                    <tr class="trip-table-row">
-                                        <td>@trip.Title</td>
-                                        <td>@trip.Creator.Name @trip.Creator.Surname</td>
-                                        <td>@trip.Organisation?.Title</td>
-                                        <td><MatButton @onclick="@(() => GetDetails(trip))">Details</MatButton></td>
-                                    </tr>
-                                }
-                            </table>
+                                </MatTableHeader>
+                                <MatTableRow Context="ctx">
+                                    <td>@ctx.Title</td>
+                                    <td>@ctx.Creator.Name @ctx.Creator.Surname</td>
+                                    <td>@ctx.Organisation?.Title</td>
+                                    @if (ctx.TripStatus == TripStatus.InReview)
+                                            {
+                                        <td><MatIcon Icon="visibility"></MatIcon></td>
+                                            }
+                                            else
+                                            {
+                                        <td><MatIcon Icon="mode_edit_outline"></MatIcon></td>
+                                            }
+                                </MatTableRow>
+                            </MatTable>
                         }
                         else
                         {
-                            <p></p>
                             <p>No trips created by you</p>
                         }
                     </MatTab>
                     <MatTab Label="Organization trips">
-                        <p></p>
-                        @if (trips.Any(t => t.Creator.Id != currentUser.Id))
+                        @if (organisationTrips.Any())
                         {
 
-                            <table>
-                                <tr>
-                                    <th>Title</th>
-                                    <th>Creator</th>
-                                    <th>Organisation</th>
+                            <MatTable Items="organisationTrips" AllowSelection="true" SelectionChanged="GetDetails" ShowPaging="@(organisationTrips.Count > 5)">
+                                <MatTableHeader>
+                                    <th style="width:25%">Title</th>
+                                    <th style="width:25%">Creator</th>
+                                    <th style="width:25%">Organisation</th>
+                                    <th style="width:25%">In review</th>
                                     <th></th>
-                                </tr>
-                                @foreach (var trip in trips.Where(t => t.Creator.Id != currentUser.Id))
-                                {
-                                    <tr class="trip-table-row">
-                                        <td>@trip.Title</td>
-                                        <td>@trip.Creator.Name @trip.Creator.Surname</td>
-                                        <td>@trip.Organisation?.Title</td>
-                                        <td><MatButton @onclick="@(() => GetDetails(trip))">Details</MatButton></td>
-                                    </tr>
-                                }
-                            </table>
+                                </MatTableHeader>
+                                <MatTableRow Context="ctx">
+                                    <td>@ctx.Title</td>
+                                    <td>@ctx.Creator.Name @ctx.Creator.Surname</td>
+                                    <td>@ctx.Organisation?.Title</td>
+                                    @if (ctx.TripStatus == TripStatus.InReview)
+                                            {
+                                        <td><MatIcon Icon="visibility"></MatIcon></td>
+                                            }
+                                            else
+                                            {
+                                        <td><MatIcon Icon="mode_edit_outline"></MatIcon></td>
+                                            }
+                                </MatTableRow>
+                            </MatTable>
                         }
                         else
                         {
-                            <p></p>
                             <p>No trips created by your organization members</p>
                         }
                     </MatTab>
@@ -89,23 +94,27 @@
 
 @code {
     private List<Trip> trips = new List<Trip>();
+    private List<Trip> organisationTrips = new List<Trip>();
     private User currentUser = null;
 
     protected override async Task OnInitializedAsync()
     {
-        await base.OnInitializedAsync();
-        trips = TripService.GetTrips();
         var user = await sessionStorageService.GetItemAsync<string>("user");
 
         if (user != null)
         {
             currentUser = JsonConvert.DeserializeObject<User>(user);
         }
+
+        await base.OnInitializedAsync();
+        trips = TripService.GetUserTrips(currentUser.Id);
+
+        organisationTrips = TripService.GetOrganisationTrips(currentUser.Id);
     }
 
-    private void GetDetails(Trip trip)
+    private void GetDetails(object o)
     {
-        NavigationManager.NavigateTo($"tripdetails/{trip.Id}");
+        NavigationManager.NavigateTo($"tripdetails/{((Trip)o).Id}");
     }
 
     private void CreateTrip()

@@ -1,0 +1,51 @@
+﻿<h3>Trips</h3>
+@page "/trips"
+@using Blazored.SessionStorage
+@inject AuthenticationStateProvider AuthenticationStateProvider;
+@inject NavigationManager NavigationManager
+@inject TripService TripService
+@inject ISessionStorageService sessionStorageService;
+
+@if (trips != null)
+{
+    <MatTable Items="trips" AllowSelection="true" SelectionChanged="GetDetails" ShowPaging="@(trips.Count > 5)">
+        <MatTableHeader>
+            <th style="width: 20%">Title</th>
+            <th style="width: 20%">Creator</th>
+            <th style="width: 20%">Organisation</th>
+            <th style="width: 20%">Starting</th>
+            <th style="width: 20%">Ending</th>
+            <th></th>
+        </MatTableHeader>
+        <MatTableRow Context="ctx">
+            <td>@ctx.Title</td>
+            <td>@ctx.Creator.Name @ctx.Creator.Surname</td>
+            <td>@ctx.Organisation?.Title</td>
+            <td>@ctx.Visits?.OrderBy(v => v.Arrival).FirstOrDefault()?.Arrival</td>
+            <td>@ctx.Visits?.OrderByDescending(v => v.Departure).FirstOrDefault()?.Departure</td>
+        </MatTableRow>
+    </MatTable>
+}
+else
+{
+    <p>No trips ready for users</p>
+}
+
+@code {
+    public List<Trip> trips { get; set; }
+    public User CurrentUser { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        CurrentUser = await ((CustomAuthenticationStateProvider)AuthenticationStateProvider).GetCurrentUser();
+        trips = TripService.GetFinalTripsForUser(CurrentUser.Id);
+        await base.OnInitializedAsync();
+        this.StateHasChanged();
+    }
+
+    private void GetDetails(object obj)
+    {
+        NavigationManager.NavigateTo($"tripAudit/{((Trip)obj).Id}");
+    }
+
+}

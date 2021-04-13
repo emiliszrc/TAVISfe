@@ -1,0 +1,110 @@
+﻿<h2>TripAudit</h2>
+@page "/tripAudit/{id}"
+@using Blazored.SessionStorage
+@using TravelManagerFE.Data.Models
+@inject AuthenticationStateProvider AuthenticationStateProvider;
+@inject NavigationManager NavigationManager
+@inject TripService TripService
+@inject ISessionStorageService sessionStorageService;
+@inject IMatToaster Toaster
+
+@if (Trip != null)
+{
+    <h3>@Trip.Title</h3>
+    @if (Participants != null)
+    {
+        <h4>Trip participants</h4>
+        <MatList>
+            @foreach (var participant in Participants)
+            {
+                <MatListItemPrimaryText>@participant.Name @participant.Surname</MatListItemPrimaryText>
+                <MatListItemSecondaryText>@participant.Email</MatListItemSecondaryText>
+                @if (participant.Notified)
+                {
+                    <MatIcon Icon="speaker_notes"></MatIcon>
+                    <MatButton OnClick="(() => SendEmail(participant, true))">Resend invite email</MatButton>
+                    <MatDivider></MatDivider>
+                }
+                else
+                {
+                    <MatIcon Icon="speaker_notes_off"></MatIcon>
+                    <MatButton OnClick="(() => SendEmail(participant))">Send invite email</MatButton>
+                    <MatDivider></MatDivider>
+                }
+
+            }
+        </MatList>
+
+    }
+    <br />
+    <h4>Add new participant</h4>
+    <EditForm Model="ParticipationRequest">
+        <p>
+            <MatTextField @bind-Value="ParticipationRequest.FirstName" Label="First Name"></MatTextField>
+        </p>
+        <p>
+            <MatTextField @bind-Value="ParticipationRequest.LastName" Label="Last Name"></MatTextField>
+        </p>
+        <p>
+            <MatTextField @bind-Value="ParticipationRequest.Email" Label="Email"></MatTextField>
+        </p>
+    </EditForm>
+    <MatButton @onclick="Submit">Invite participant</MatButton>
+}
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+    public Trip Trip { get; set; }
+    public List<ClientResponse> Participants { get; set; } = new List<ClientResponse>();
+    public ParticipationRequest ParticipationRequest { get; set; } = new ParticipationRequest();
+
+    protected override Task OnInitializedAsync()
+    {
+        Trip = TripService.GetTrip(Id);
+        Participants = TripService.GetParticipantsForTrip(Id);
+        return base.OnInitializedAsync();
+    }
+
+    private void Submit()
+    {
+        ParticipationRequest.TripId = Id;
+        Participants = TripService.InviteParticipant(ParticipationRequest);
+        StateHasChanged();
+    }
+
+    private void SendEmail(ClientResponse participant, bool resend = false)
+    {
+        var sent = TripService.SendEmailByUserId(participant.Id, Trip.Id, resend);
+
+        if (sent)
+        {
+            ShowToast($"Successfully sent email to {participant.Email}", MatToastType.Info, "Success", false);
+        }
+        else
+        {
+            ShowToast($"Email to {participant.Email} was not sent", MatToastType.Warning, "Error", true);
+        }
+        StateHasChanged();
+    }
+
+    private void ShowToast(string text, MatToastType type, string title, bool requireInteraction)
+    {
+        Toaster.Add(text, type, title, null, config =>
+        {
+            config.ShowCloseButton = true;
+            config.ShowProgressBar = true;
+
+            //config.ShowTransitionDuration = Convert.ToInt32(_showTransitionDuration);
+            config.VisibleStateDuration = Convert.ToInt32(5000);
+            config.RequireInteraction = requireInteraction;
+            //config.HideTransitionDuration = Convert.ToInt32(_hideTransitionDuration);
+
+            if (requireInteraction)
+            {
+                config.Onclick = toast => Task.CompletedTask;
+            }
+        });
+    }
+}
+

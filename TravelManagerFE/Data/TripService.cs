@@ -29,6 +29,40 @@ namespace TravelManagerFE.Data
             return trips;
         }
 
+        public List<Trip> GetUserTrips(string userId)
+        {
+            var client = new RestClient(baseUrl + $"trips/createdByUser/{userId}");
+            var request = new RestRequest(Method.GET);
+
+            var response = client.Execute(request);
+
+            if (!response.StatusCode.Equals(System.Net.HttpStatusCode.OK))
+            {
+                //throw new TripAdvisorApiException($"Could not retrieve information from TripAdvisor. Response code: {response.StatusCode}");
+            }
+
+            var trips = JsonConvert.DeserializeObject<List<Trip>>(response.Content);
+
+            return trips;
+        }
+
+        public List<Trip> GetOrganisationTrips(string organisationId)
+        {
+            var client = new RestClient(baseUrl + $"trips/createdByOrganisation/{organisationId}");
+            var request = new RestRequest(Method.GET);
+
+            var response = client.Execute(request);
+
+            if (!response.StatusCode.Equals(System.Net.HttpStatusCode.OK))
+            {
+                //throw new TripAdvisorApiException($"Could not retrieve information from TripAdvisor. Response code: {response.StatusCode}");
+            }
+
+            var trips = JsonConvert.DeserializeObject<List<Trip>>(response.Content);
+
+            return trips;
+        }
+
         public Trip GetTrip(string id)
         {
             var client = new RestClient(baseUrl+ $"trips/{id}");
@@ -141,12 +175,11 @@ namespace TravelManagerFE.Data
             return reviewResponse;
         }
 
-        public List<Review> GetReviewBy(string reviewId, string currentUserId)
+        public Review GetCurrentReviewByTripId(string tripId)
         {
-            var client = new RestClient(baseUrl + $"Trips/{reviewId}/Reviews/ByUser");
+            var client = new RestClient(baseUrl + $"trips/{tripId}/Review");
             var request = new RestRequest(Method.GET);
             request.AddHeader("content-type", "application/json");
-            request.AddQueryParameter("userId", currentUserId);
 
             var response = client.Execute(request);
 
@@ -155,7 +188,7 @@ namespace TravelManagerFE.Data
                 //throw new TripAdvisorApiException($"Could not retrieve information from TripAdvisor. Response code: {response.StatusCode}");
             }
 
-            var reviewResponse = JsonConvert.DeserializeObject<List<Review>>(response.Content);
+            var reviewResponse = JsonConvert.DeserializeObject<Review>(response.Content);
 
             return reviewResponse;
         }
@@ -418,5 +451,127 @@ namespace TravelManagerFE.Data
 
             return reviewResponse;
         }
+
+        public void DeleteTrip(string tripId)
+        {
+            var client = new RestClient(baseUrl + $"trips/{tripId}");
+            var request = new RestRequest(Method.DELETE);
+            request.AddHeader("content-type", "application/json");
+
+            var response = client.Execute(request);
+
+            if (!response.StatusCode.Equals(System.Net.HttpStatusCode.OK))
+            {
+                //throw new TripAdvisorApiException($"Could not retrieve information from TripAdvisor. Response code: {response.StatusCode}");
+            }
+        }
+
+        public List<Reviewer> GetReviewersForTripId(string tripId)
+        {
+            var client = new RestClient(baseUrl + $"trips/{tripId}/Reviewers");
+            var request = new RestRequest(Method.GET);
+            request.AddHeader("content-type", "application/json");
+
+            var response = client.Execute(request);
+
+            if (!response.StatusCode.Equals(System.Net.HttpStatusCode.OK))
+            {
+                //throw new TripAdvisorApiException($"Could not retrieve information from TripAdvisor. Response code: {response.StatusCode}");
+            }
+
+            var reviewResponse = JsonConvert.DeserializeObject<List<Reviewer>>(response.Content);
+
+            return reviewResponse;
+        }
+
+        public List<Trip> GetFinalTripsForUser(string currentUserId)
+        {
+            var client = new RestClient(baseUrl + $"trips/final/{currentUserId}");
+            var request = new RestRequest(Method.GET);
+            request.AddHeader("content-type", "application/json");
+
+            var response = client.Execute(request);
+
+            if (!response.StatusCode.Equals(System.Net.HttpStatusCode.OK))
+            {
+                //throw new TripAdvisorApiException($"Could not retrieve information from TripAdvisor. Response code: {response.StatusCode}");
+            }
+
+            var reviewResponse = JsonConvert.DeserializeObject<List<Trip>>(response.Content);
+
+            return reviewResponse;
+        }
+
+        public List<ClientResponse> GetParticipantsForTrip(string id)
+        {
+            var client = new RestClient(baseUrl + $"clients/forTrip/{id}");
+            var request = new RestRequest(Method.GET);
+            request.AddHeader("content-type", "application/json");
+
+            var response = client.Execute(request);
+
+            if (!response.StatusCode.Equals(System.Net.HttpStatusCode.OK))
+            {
+                //throw new TripAdvisorApiException($"Could not retrieve information from TripAdvisor. Response code: {response.StatusCode}");
+            }
+
+            var reviewResponse = JsonConvert.DeserializeObject<List<ClientResponse>>(response.Content);
+
+            return reviewResponse;
+        }
+
+        public List<ClientResponse> InviteParticipant(ParticipationRequest participationRequest)
+        {
+            var client = new RestClient(baseUrl + $"clients/invite");
+            var request = new RestRequest(Method.POST);
+            request.AddHeader("content-type", "application/json");
+            request.AddJsonBody(participationRequest);
+
+            var response = client.Execute(request);
+
+            if (!response.StatusCode.Equals(System.Net.HttpStatusCode.OK))
+            {
+                //throw new TripAdvisorApiException($"Could not retrieve information from TripAdvisor. Response code: {response.StatusCode}");
+            }
+
+            var reviewResponse = JsonConvert.DeserializeObject<List<ClientResponse>>(response.Content);
+
+            return reviewResponse;
+        }
+
+        public bool SendEmailByUserId(string participant, string trip, bool resend)
+        {
+            var client = new RestClient(baseUrl + $"clients/sendInviteEmail/byClient/{participant}/{trip}/{resend}");
+            var request = new RestRequest(Method.POST);
+            request.AddHeader("content-type", "application/json");
+
+            var response = client.Execute(request);
+
+            if (!response.StatusCode.Equals(System.Net.HttpStatusCode.OK))
+            {
+                return false;
+            }
+
+            return true;
+        }
+    }
+
+    public class Client
+    {
+        public string Id { get; set; }
+        public string Email { get; set; }
+        public string DefaultPassword { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+    }
+
+    public class ClientResponse
+    {
+        public string Id { get; set; }
+        public string Email { get; set; }
+        public string DefaultPassword { get; set; }
+        public string Name { get; set; }
+        public string Surname { get; set; }
+        public bool Notified { get; set; }
     }
 }

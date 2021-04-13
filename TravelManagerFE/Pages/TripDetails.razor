@@ -23,6 +23,7 @@
 </div>
 <br />
 <br />
+<MatButton OnClick="DeleteTrip">Delete trip</MatButton>
 
 @*<EditForm Model="@destinationRequest">
         <div class="body-limiter">
@@ -66,18 +67,21 @@
                 <span>Depart at: @context.Departure</span>
             </div>
             <div class="mat-layout-grid-cell">
-                <MatButton @onclick="@(() => OpenVisitEdit(@context))" class="btn btn-secondary m-1">
-                    Edit
-                    <span class="material-icons">
-                        edit
-                    </span>
-                </MatButton>
-                <MatButton @onclick="@(() => RemoveVisit(@context))" class="btn btn-secondary m-1">
-                    Remove
-                    <span class="material-icons">
-                        delete
-                    </span>
-                </MatButton>
+                @if (trip.TripStatus == TripStatus.New)
+                {
+                    <MatButton @onclick="@(() => OpenVisitEdit(@context))" class="btn btn-secondary m-1">
+                        Edit
+                        <span class="material-icons">
+                            edit
+                        </span>
+                    </MatButton>
+                    <MatButton @onclick="@(() => RemoveVisit(@context))" class="btn btn-secondary m-1">
+                        Remove
+                        <span class="material-icons">
+                            delete
+                        </span>
+                    </MatButton>
+                }
             </div>
         </div>
         @if (validity != null && validity.Reasons.Any())
@@ -126,20 +130,28 @@
     </div>
     <MatDivider></MatDivider>
 </Dropzone>
-<MatButton @onclick="SaveDestinationOrder">Save destination order</MatButton>
-<MatButton @onclick="DisplayMapRoutes">Show On Map</MatButton>
-
-<MatButton @onclick="DisplayDestinationSearch">Add new visit</MatButton>
-<MatButton @onclick="ValidateTrip">Validate trip</MatButton>
-
-@if (validity != null && validity.IsValid)
+@if (trip.TripStatus == TripStatus.New)
 {
-    <MatButton @onclick="SubmitForReview">Submit for review</MatButton>
+    <MatButton @onclick="SaveDestinationOrder">Save destination order</MatButton>
+    <MatButton @onclick="DisplayMapRoutes">Show On Map</MatButton>
+
+    <MatButton @onclick="DisplayDestinationSearch">Add new visit</MatButton>
+    <MatButton @onclick="ValidateTrip">Validate trip</MatButton>
+
+    @if (validity != null && validity.IsValid && trip.Organisation != null)
+    {
+        <MatButton @onclick="SubmitForReview">Submit for review</MatButton>
+    }
+
+    @if (DestinationSearchShown)
+    {
+        <DestinationSearch OnClick="ClickHandler"></DestinationSearch>
+    }
 }
-
-@if (DestinationSearchShown)
+else
 {
-    <DestinationSearch OnClick="ClickHandler"></DestinationSearch>
+    <p><b>Trip is in active review, editing is disabled</b></p>
+    <MatButton OnClick="GoToReview">See current review</MatButton>
 }
 
 @if (MapRoutesShown)
@@ -158,6 +170,7 @@
     private TripService.Validity validity { get; set; }
     private bool panelOpenState { get; set; } = false;
     private bool IgnoreWarnings { get; set; } = false;
+    private Review review { get; set; }
 
     private class DestinationAddRequest
     {
@@ -175,6 +188,11 @@
         panelOpenState = false;
         trip = TripService.GetTrip(Id);
         trip.Visits = trip.Visits.OrderBy(destination => destination.VisitationIndex).ToList();
+
+        if (trip.TripStatus == TripStatus.InReview)
+        {
+            review = TripService.GetCurrentReviewByTripId(trip.Id);
+        }
     }
 
     void ClickHandler(Location location)
@@ -223,7 +241,7 @@
 
     private async void SubmitForReview()
     {
-        var reviewers = OrganisationService.GetById(trip.Organisation.Id).Contracts.Where(c=>c.User.Id != trip.Creator.Id).ToList();
+        var reviewers = OrganisationService.GetById(trip.Organisation.Id).Contracts.Where(c => c.User.Id != trip.Creator.Id).ToList();
 
         var parameters = new ModalParameters();
         parameters.Add(nameof(reviewers), reviewers);
@@ -287,4 +305,17 @@
             }
         }
     }
+
+    private void DeleteTrip()
+    {
+        TripService.DeleteTrip(trip.Id);
+        ShowToast("Successfully deleted trip", MatToastType.Info, "Success", false);
+        NavigationManager.NavigateTo($"/tripList");
+    }
+
+    public void GoToReview()
+    {
+        NavigationManager.NavigateTo($"/review/{review.Id}");
+    }
+
 }
