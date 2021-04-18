@@ -1,0 +1,61 @@
+﻿@using Blazored.SessionStorage
+@using Newtonsoft.Json
+@using TravelManagerFE.Data.Models
+@page "/tripReuse/{id}"
+
+<h3>Trip re-use</h3>
+
+<EditForm Model="ReuseRequest">
+    <p>
+        <MatTextField @bind-Value="ReuseRequest.Title" HelperText="Title" Label="Title"></MatTextField>
+    </p>
+    <p>
+        <MatDatePicker @bind-Value="ReuseRequest.StartDate" HelperText="Start date" Enable24hours="true"></MatDatePicker>
+    </p>
+    <MatButton OnClick="Reuse">Submit</MatButton>
+</EditForm>
+
+@inject AuthenticationStateProvider AuthenticationStateProvider;
+@inject NavigationManager NavigationManager
+@inject TripService TripService
+@inject ISessionStorageService sessionStorageService;
+@inject IMatToaster Toaster
+
+@code {
+    public TripReuseRequest ReuseRequest { get; set; } = new TripReuseRequest();
+    [Parameter]
+    public string id { get; set; }
+    public Trip trip { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        base.OnInitialized();
+        trip = TripService.GetTrip(id);
+        ReuseRequest.ReusingTripId = id;
+        ReuseRequest.Title = trip.Title;
+        var user = await sessionStorageService.GetItemAsync<string>("user");
+
+        if (user != null)
+        {
+            ReuseRequest.CreatorId = JsonConvert.DeserializeObject<User>(user).Id;
+        }
+        StateHasChanged();
+    }
+
+    public class TripReuseRequest
+    {
+        public string ReusingTripId { get; set; } = string.Empty;
+        public DateTime StartDate { get; set; } = DateTime.UtcNow;
+        public string Title { get; set; } = string.Empty;
+        public string CreatorId { get; set; } = string.Empty;
+    }
+
+    private void Reuse()
+    {
+        ReuseRequest.StartDate = ReuseRequest.StartDate.ToUniversalTime();
+        ReuseRequest.StartDate = ReuseRequest.StartDate.AddHours(3);
+        var createdTrip = TripService.ReuseTrip(ReuseRequest);
+        NavigationManager.NavigateTo($"/tripDetails/{createdTrip.Id}");
+    }
+
+}

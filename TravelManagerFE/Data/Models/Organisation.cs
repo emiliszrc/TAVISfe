@@ -7,5 +7,6 @@ namespace TravelManagerFE.Data.Models
         public string Id { get; set; }
         public string Title { get; set; }
         public List<Contract> Contracts { get; set; }
+        public int RequiredReviewerCount { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-﻿<h3>Profile</h3>
+﻿<h1>Profile</h1>
 @page "/profile"
 @using TravelManagerFE.Data.Models
 @using System.Linq
@@ -21,20 +21,39 @@
         {
             @if (User.Contracts.Any() && User.Contracts.Any(c => c.ContractType == ContractType.Owner))
             {
-                <p></p>
-                <p>Add members to organisation</p>
+                <h3>Pick an organisation to manage</h3>
                 <MatSelectItem @bind-Value="@SelectedOrganisation" Items="@(User.Contracts.Where(c => c.ContractType == ContractType.Owner).Select(c => c.Organisation).ToList())">
                     <ItemTemplate>@context.Title</ItemTemplate>
                 </MatSelectItem>
-                <MatTextField @bind-Value="Username" HelperText="Title" Label="Title"></MatTextField>
 
-                <MatButton @onclick="Invite">Invite</MatButton>
+                <MatButton OnClick="OpenOrganisationMemberView">Manage</MatButton>
+
+                @if (ManageOrganisationMembers)
+                {
+                    <p></p>
+                    <h4>Members</h4>
+                    <MatList>
+                        @foreach (var member in CurrentOrganisation.Contracts.Select(c => c.User))
+                        {
+                            <MatListItem>@member.Name @member.Surname</MatListItem>
+                        }
+                    </MatList>
+
+                    <h4>Add members to organisation</h4>
+                    <MatTextField @bind-Value="Username" HelperText="Title" Label="Title"></MatTextField>
+                    <MatButton @onclick="Invite">Invite</MatButton>
+
+                    <h4>Set minimum reviewer count</h4>
+                    <MatSelectItem @bind-Value="selectedCount" Items="@ReviewerCount"></MatSelectItem> <br />
+                    <MatButton @onclick="SubmitReviewers">Submit</MatButton>
+                    <p></p>
+                }
             }
 
+            <MatDivider></MatDivider> <br/>
             <MatDivider></MatDivider>
-
             <p></p>
-            <p>Create an organisation</p>
+            <h3>Create an organisation</h3>
 
             <EditForm Model="OrganisationRequest">
                 <p>
@@ -43,13 +62,13 @@
             </EditForm>
             <MatButton @onclick="Submit">Submit</MatButton>
 
+            <MatDivider></MatDivider><br />
             <MatDivider></MatDivider>
-
             <p></p>
-            <p>Review invites to organisations</p>
+            <h3>Review invites to organisations</h3>
             @if (Invites != null)
             {
-                @foreach (var invite in Invites.Where(i=>i.Status == InviteStatus.New))
+                @foreach (var invite in Invites.Where(i => i.Status == InviteStatus.New))
                 {
                     <tr>
                         <td>@invite.Organisation.Title</td>
@@ -65,8 +84,12 @@
 @code {
     public User User { get; set; }
     public Organisation SelectedOrganisation { get; set; }
+    public Organisation CurrentOrganisation { get; set; }
     public OrganisationRequest OrganisationRequest { get; set; } = new OrganisationRequest();
+    public bool ManageOrganisationMembers { get; set; }
     public List<Invite> Invites { get; set; } = new List<Invite>();
+    public List<int> ReviewerCount { get; set; }
+    public int selectedCount { get; set; }
     public string Username { get; set; } = string.Empty;
 
     protected override async Task OnInitializedAsync()
@@ -106,7 +129,7 @@
 
         var inviteRequest = new InviteRequest
         {
-            OrganisationId = SelectedOrganisation.Id,
+            OrganisationId = CurrentOrganisation.Id,
             Username = Username
         };
 
@@ -201,6 +224,31 @@
         public string OrganisationId { get; set; }
         public string UserId { get; set; }
         public InviteStatus Status { get; set; }
+    }
+
+    private void SubmitReviewers()
+    {
+        CurrentOrganisation = organisationService.SetReviewerCount(CurrentOrganisation.Id, selectedCount.ToString());
+        selectedCount = CurrentOrganisation.RequiredReviewerCount;
+    }
+
+    private void OpenOrganisationMemberView()
+    {
+        if (ManageOrganisationMembers == false)
+        {
+            CurrentOrganisation = organisationService.GetById(SelectedOrganisation.Id);
+
+            
+            if (CurrentOrganisation.Contracts.Any())
+            {
+                ReviewerCount = Enumerable.Range(0, CurrentOrganisation.Contracts.Count).ToList();
+                selectedCount = CurrentOrganisation.RequiredReviewerCount;
+            }
+        }
+
+        ManageOrganisationMembers = !ManageOrganisationMembers;
+
+
     }
 
 }

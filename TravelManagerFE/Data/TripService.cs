@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using RestSharp;
 using TravelManagerFE.Data.Models;
+using TravelManagerFE.Pages;
 
 namespace TravelManagerFE.Data
 {
@@ -553,6 +554,25 @@ namespace TravelManagerFE.Data
             }
 
             return true;
+        }
+
+        public Trip ReuseTrip(TripReuse.TripReuseRequest reuseRequest)
+        {
+            var client = new RestClient(baseUrl + $"trips/{reuseRequest.ReusingTripId}/Reuse");
+            var request = new RestRequest(Method.POST);
+            request.AddHeader("content-type", "application/json");
+            request.AddJsonBody(reuseRequest);
+
+            var response = client.Execute(request);
+
+            if(!response.StatusCode.Equals(System.Net.HttpStatusCode.OK))
+            {
+                //throw new TripAdvisorApiException($"Could not retrieve information from TripAdvisor. Response code: {response.StatusCode}");
+            }
+
+            var reviewResponse = JsonConvert.DeserializeObject<Trip>(response.Content);
+
+            return reviewResponse;
         }
     }
 

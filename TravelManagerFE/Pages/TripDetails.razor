@@ -10,7 +10,7 @@
 
 @page "/tripDetails/{id}"
 
-<h3>Trip Details</h3>
+<h1>Trip Details</h1>
 
 @inject NavigationManager NavigationManager
 @inject TripService TripService
@@ -45,9 +45,9 @@
             </div>
         </div>
     </EditForm>*@
-<p>
+<h3>
     Trip visits
-</p>
+</h3>
 @if (validity != null)
 {
     <div>
@@ -61,10 +61,10 @@
                 <span>@context.Location.Title</span>
             </div>
             <div class="mat-layout-grid-cell">
-                <span>Arrive at: @context.Arrival</span>
+                <span>Arrive at: @(context.Arrival.ToLocalTime())</span>
             </div>
             <div class="mat-layout-grid-cell">
-                <span>Depart at: @context.Departure</span>
+                <span>Depart at: @context.Departure.ToLocalTime()</span>
             </div>
             <div class="mat-layout-grid-cell">
                 @if (trip.TripStatus == TripStatus.New)

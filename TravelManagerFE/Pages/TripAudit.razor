@@ -10,7 +10,10 @@
 
 @if (Trip != null)
 {
-    <h3>@Trip.Title</h3>
+    <h3>@Trip.Title</h3> 
+    <br/><br/>
+    <MatButton OnClick="Reuse">Re-use</MatButton>
+    <br/>
     @if (Participants != null)
     {
         <h4>Trip participants</h4>
@@ -106,5 +109,11 @@
             }
         });
     }
+
+    private void Reuse()
+    {
+        NavigationManager.NavigateTo($"tripReuse/{Id}");
+    }
+
 }
 
