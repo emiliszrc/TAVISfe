@@ -40,7 +40,7 @@
                     </MatList>
 
                     <h4>Add members to organisation</h4>
-                    <MatTextField @bind-Value="Username" HelperText="Title" Label="Title"></MatTextField>
+                    <MatTextField @bind-Value="Username"  Label="Username"></MatTextField>
                     <MatButton @onclick="Invite">Invite</MatButton>
 
                     <h4>Set minimum reviewer count</h4>
@@ -57,7 +57,7 @@
 
             <EditForm Model="OrganisationRequest">
                 <p>
-                    <MatTextField @bind-Value="OrganisationRequest.Title" HelperText="Title" Label="Title"></MatTextField>
+                    <MatTextField @bind-Value="OrganisationRequest.Title" Label="Title"></MatTextField>
                 </p>
             </EditForm>
             <MatButton @onclick="Submit">Submit</MatButton>
@@ -76,6 +76,12 @@
                         <td><MatButton @onclick="@(() => RejectInvite(invite))">Reject invite</MatButton></td>
                     </tr>
                 }
+            }
+            else
+            {
+                <div>
+                    <p>No invites</p>
+                </div>
             }
         }
     </MatTab>

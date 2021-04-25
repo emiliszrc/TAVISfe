@@ -19,6 +19,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Plk.Blazor.DragDrop;
+using Radzen;
 using TravelManagerFE.Data;
 
 namespace TravelManagerFE
@@ -49,6 +50,7 @@ namespace TravelManagerFE
             services.AddBlazorise(options => { options.ChangeTextOnKeyPress = true; });
             services.AddBlazorTable();
 
+            services.AddScoped<DialogService>();
             services.AddBlazorDragDrop();
             services.AddServerSideBlazor().AddHubOptions(config => config.MaximumReceiveMessageSize = 100048576);
             services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();

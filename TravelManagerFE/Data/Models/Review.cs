@@ -47,7 +47,15 @@ namespace TravelManagerFE.Data.Models
     public class Approval
     {
         public User User { get; set; }
-        public ReviewStatus Status { get; set; }
+        public ApprovalStatus Status { get; set; }
         public DateTime CreatedDate { get; set; }
+    }
+
+    public enum ApprovalStatus
+    {
+        Approved,
+        Rejecting,
+        Cancelled,
+        NeedsWork
     }
 }

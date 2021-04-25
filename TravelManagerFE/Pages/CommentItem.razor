@@ -27,7 +27,7 @@
                     <label>
                         <MatTextField TextArea="true" @bind-Value="CommentRequest.Text"></MatTextField>
                     </label>
-                    <MatButton>class="login-button-wrap" type="submit">Submit</MatButton>
+                    <MatButton class="login-button-wrap" type="submit">Submit</MatButton>
                 </EditForm>
             }
             @if (@CommentNode.ChildComments != null && CommentNode.ChildComments.Any())

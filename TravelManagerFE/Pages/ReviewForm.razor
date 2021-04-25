@@ -1,170 +1,244 @@
-﻿<h3>Review</h3>
-<MatButton OnClick="ShowOnMap">Show on map</MatButton>
-<div>
-    @if (showOnMap)
+﻿<div>
+    <h3 style="float:left">Review</h3>
+    @if (Trip != null && CurrentUser != null)
     {
+        @if (Trip.Creator.Id != CurrentUser.Id)
+        {
+            <span style="float: right">
+                <MatIconButton Id="approveButton" Style="@acceptButtonStyle" Icon="done" OnClick="@(e => PostStatus(e, ReviewStatus.Approved))" ToggleIcon="done_outlined" Toggled="@IsButtonToggled(ReviewStatus.Approved)"></MatIconButton>
+                <MatIconButton Id="updateButton" Style="@updateButtonStyle" Icon="replay" OnClick="@(e => PostStatus(e, ReviewStatus.NeedsWork))" ToggleIcon="replay_circle_filled" Toggled="@IsButtonToggled(ReviewStatus.NeedsWork)"></MatIconButton>
+            </span>
+        }
+        else
+        {
+            @if (Trip.TripStatus == TripStatus.ReadyToFinalize)
+            {
+                <MatButton style="float: right" OnClick="FinalizeAsCreator">Finalize</MatButton>
+            }
+            else
+            {
+                <p style="float: right">Missing approvals, not ready to finalize</p>
+            }
+        }
+    }
+</div>
+<br />
+<br />
+<MatTabGroup>
+    <MatTab Label="Schedule">
+        @if (appointments != null && appointments.Any())
+        {
+            <div class="row">
+                <div class="col-xl-6">
+                    <RadzenScheduler style="height: 768px;" TItem="Appointment" Data=@appointments StartProperty="Start" EndProperty="End"
+                                     TextProperty="Text" SelectedIndex="2"
+                                     AppointmentRender=@OnAppointmentRender Date="Trip.Visits.FirstOrDefault().Arrival">
+                        <RadzenDayView />
+                        <RadzenWeekView />
+                        <RadzenMonthView />
+                    </RadzenScheduler>
+                </div>
+            </div>
+        }
+    </MatTab>
+    <MatTab Label="Trip details">
+        <br />
+        <p>Created by @Trip.Creator.Name @Trip.Creator.Surname</p>
+        @if (CurrentReview != null && CurrentReview.Warnings.Any())
+        {
+            <MatAccordion>
+                <MatList style="max-height: 300px; overflow: auto; overflow-x: hidden;">
+                    @foreach (var warning in CurrentReview.Warnings)
+                    {
+                        <p>@warning.WarningText</p>
+                        <MatDivider></MatDivider>
+                    }
+                </MatList>
+            </MatAccordion>
+            <br />
+        }
+        <br />
+        <MatButton OnClick="ShowOnMap">Show on map</MatButton>
+        <div>
+            @if (showOnMap)
+            {
+                <MapRoutes Trip="@Trip" />
+            }
+        </div>
+    </MatTab>
+    <MatTab Label="Visits">
+        <br />
         @if (ReviewingVisit != null)
         {
-            <MapRoutes Visit="@ReviewingVisit" />
+            <MatButton OnClick="PostCommentOnCurrentVisit">Post comment on current visit</MatButton>
         }
-    }
-</div>
-<div>
-    <span>
-        <MatIconButton Id="approveButton" Style="@acceptButtonStyle" Icon="done" OnClick="@(e => PostStatus(e, ReviewStatus.Approved))" ToggleIcon="done_outlined" Toggled="@IsButtonToggled(ReviewStatus.Approved)"></MatIconButton>
-        <MatIconButton Id="updateButton" Style="@updateButtonStyle" Icon="replay" OnClick="@(e => PostStatus(e, ReviewStatus.NeedsWork))" ToggleIcon="replay_circle_filled" Toggled="@IsButtonToggled(ReviewStatus.NeedsWork)"></MatIconButton>
-        <MatIconButton Id="rejectButton" Style="@rejectButtonStyle" Icon="delete_outline" OnClick="@(e => PostStatus(e, ReviewStatus.Rejected))" ToggleIcon="delete" Toggled="@IsButtonToggled(ReviewStatus.Rejected)"></MatIconButton>
-    </span>
-
-    @*@if (CurrentReview != null)
-        {
-            <MatButton Label="Reviewers" OnClick="@OnClick2" @ref="Button2" ></MatButton>
-            <MatMenu @ref="ReviewersList" >
-                <MatList>
-                    @foreach (var approval in CurrentReview.Approvals.Distinct())
-                    {
-
-                    }
-                    <MatListItem>Item 1</MatListItem>
-                </MatList>
-            </MatMenu>
-        }*@
-</div>
-<p>General trip warnings</p>
-@if (CurrentReview != null && CurrentReview.Warnings.Any())
-{
-    <MatTable ShowPaging="CurrentReview.Warnings.Count(w => w.Visit == null) > 5" Items="CurrentReview.Warnings.Where(w=>w.Visit == null)">
-        <MatTableRow Context="ctx">
-            <td>@ctx.WarningText</td>
-        </MatTableRow>
-    </MatTable>
-}
-
-<div class="mat-layout-grid">
-    <div class="mat-layout-grid-inner">
-        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
-            <div>
-                @if (Trip != null)
-                {
-                    <h4>@Trip.Visits.Count destination(s)</h4>
-                    <MatAccordion>
-                        <MatList style="height: 300px; overflow: scroll; overflow-x: hidden;" TwoLine="true">
-                            @foreach (var visit in Trip.Visits)
-                            {
-                                <MatListItem OnClick="@(e => PopulateReview(e, visit))">
-                                    <MatListItemText>
-                                        <MatListItemPrimaryText>
-                                            @visit.Location.Title
-                                        </MatListItemPrimaryText>
-                                        <MatListItemSecondaryText>
-                                            @GetTripDestinationComments(visit.Id).Count comment(s)
-                                        </MatListItemSecondaryText>
-                                    </MatListItemText>
-                                </MatListItem>
-                                <MatDivider></MatDivider>
-                            }
-                        </MatList>
-                    </MatAccordion>
-                }
-            </div>
-        </div>
-    </div>
-</div>
-<div class="mat-layout-grid-cell mat-layout-grid-cell-span-9">
-    @if (ReviewingVisit != null)
-    {
-
-        <MatTabGroup>
-            <MatTab Label="Fields">
-                <div class="mat-layout-grid-inner mat-layout-grid-cell-span-13" style="padding: 20px 10px;">
-                    <div class="mat-layout-grid-cell">
-                        <EditForm Model="ReviewingVisit.Location">
-                            <p>
-                                <MatTextField @bind-Value="ReviewingVisit.Location.Title" IconTrailing="true" Style="" ReadOnly="true" HelperText="Helper Text" Label="Title" FullWidth="true"> </MatTextField>
-                            </p>
-                            <p>
-                                <MatTextField @bind-Value="ReviewingVisit.Location.Type" IconTrailing="true" Style="" ReadOnly="true" HelperText="Helper Text" Label="Title" FullWidth="true"> </MatTextField>
-                            </p>
-                            <p>
-                                <MatTextField @bind-Value="ReviewingVisit.Location.Address" IconTrailing="true" ReadOnly="true" HelperText="" Label="Address" Style="" FullWidth="true"></MatTextField>
-                            </p>
-                            <p>
-                                <MatButton></MatButton>
-                            </p>
-                        </EditForm>
-                    </div>
-                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-2">
-
-                        <EditForm Model="ReviewingVisit">
-                            <p>
-                                <MatTextField @bind-Value="ReviewingVisit.Arrival" Style="" IconTrailing="true" ReadOnly="true" HelperText="Helper Text" Label="Arrival" FullWidth="true"></MatTextField>
-                            </p>
-                            <p>
-                                <MatTextField @bind-Value="ReviewingVisit.Departure" Style="" IconTrailing="true" ReadOnly="true" HelperText="Helper Text" Label="Departure" FullWidth="true"></MatTextField>
-                            </p>
-                            <p>
-                                <MatTextField @bind-Value="ReviewingVisit.Location.Latitude" IconTrailing="true" Style="" ReadOnly="true" HelperText="Helper Text" Label="Latitude" FullWidth="true"></MatTextField>
-                            </p>
-                            <p>
-                                <MatTextField @bind-Value="ReviewingVisit.Location.Longtitude" IconTrailing="true" Style="" ReadOnly="true" HelperText="Helper Text" Label="Longtitude" FullWidth="true"></MatTextField>
-                            </p>
-                        </EditForm>
+        <br />
+        <div class="mat-layout-grid">
+            <div class="mat-layout-grid-inner">
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
+                    <div>
+                        @if (Trip != null)
+                        {
+                            <h4>@Trip.Visits.Count visit(s)</h4>
+                            <MatAccordion>
+                                <MatList style="height: 300px; overflow: auto; overflow-x: hidden;" TwoLine="true">
+                                    @foreach (var visit in Trip.Visits)
+                                    {
+                                        <MatListItem OnClick="@(e => PopulateReview(e, visit))">
+                                            <MatListItemText>
+                                                <MatListItemPrimaryText>
+                                                    @visit.Location.Title
+                                                </MatListItemPrimaryText>
+                                                <MatListItemSecondaryText>
+                                                    @GetTripDestinationComments(visit.Id).Count comment(s)
+                                                </MatListItemSecondaryText>
+                                            </MatListItemText>
+                                        </MatListItem>
+                                        <MatDivider></MatDivider>
+                                    }
+                                </MatList>
+                            </MatAccordion>
+                        }
                     </div>
                 </div>
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-5">
+                    <div>
+                        @if (ReviewingVisit != null)
+                        {
+                            <MapRoutes Visit="@ReviewingVisit" />
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-9">
+            @if (ReviewingVisit != null)
+            {
+
+                <MatTabGroup>
+                    <MatTab Label="Fields">
+                        <div class="mat-layout-grid-inner mat-layout-grid-cell-span-13" style="padding: 20px 10px;">
+                            <div class="mat-layout-grid-cell">
+                                <EditForm Model="ReviewingVisit.Location">
+                                    <p>
+                                        <MatTextField @bind-Value="ReviewingVisit.Location.Title" IconTrailing="true" Style="" ReadOnly="true" HelperText="Helper Text" Label="Title" FullWidth="true"> </MatTextField>
+                                    </p>
+                                    <p>
+                                        <MatTextField @bind-Value="ReviewingVisit.Location.Type" IconTrailing="true" Style="" ReadOnly="true" HelperText="Helper Text" Label="Title" FullWidth="true"> </MatTextField>
+                                    </p>
+                                    <p>
+                                        <MatTextField @bind-Value="ReviewingVisit.Location.Address" IconTrailing="true" ReadOnly="true" HelperText="" Label="Address" Style="" FullWidth="true"></MatTextField>
+                                    </p>
+                                    <p>
+                                        <MatButton></MatButton>
+                                    </p>
+                                </EditForm>
+                            </div>
+                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-2">
+
+                                <EditForm Model="ReviewingVisit">
+                                    <p>
+                                        <MatTextField @bind-Value="ReviewingVisit.Arrival" Style="" IconTrailing="true" ReadOnly="true" HelperText="Helper Text" Label="Arrival" FullWidth="true"></MatTextField>
+                                    </p>
+                                    <p>
+                                        <MatTextField @bind-Value="ReviewingVisit.Departure" Style="" IconTrailing="true" ReadOnly="true" HelperText="Helper Text" Label="Departure" FullWidth="true"></MatTextField>
+                                    </p>
+                                    <p>
+                                        <MatTextField @bind-Value="ReviewingVisit.Location.Latitude" IconTrailing="true" Style="" ReadOnly="true" HelperText="Helper Text" Label="Latitude" FullWidth="true"></MatTextField>
+                                    </p>
+                                    <p>
+                                        <MatTextField @bind-Value="ReviewingVisit.Location.Longtitude" IconTrailing="true" Style="" ReadOnly="true" HelperText="Helper Text" Label="Longtitude" FullWidth="true"></MatTextField>
+                                    </p>
+                                </EditForm>
+                            </div>
+                        </div>
 
 
-            </MatTab>
-            <MatTab Label="Warnings">
-                @if (CurrentReview != null && CurrentReview.Warnings.Any(w => w.Visit != null && w.Visit.Id == ReviewingVisit.Id))
+                    </MatTab>
+                    <MatTab Label="Warnings">
+                        @if (CurrentReview != null && CurrentReview.Warnings.Any(w => w.Visit != null && w.Visit.Id == ReviewingVisit.Id))
+                        {
+                            <MatTable ShowPaging="CurrentReview.Warnings.Count(w => w.Visit != null && w.Visit.Id == ReviewingVisit.Id) > 5" Items="CurrentReview.Warnings.Where(w => w.Visit != null && w.Visit.Id == ReviewingVisit.Id)">
+                                <MatTableRow Context="ctx">
+                                    <td>@ctx.WarningText</td>
+                                </MatTableRow>
+                            </MatTable>
+                        }
+                        else
+                        {
+                            <p>No warnings occured during submission</p>
+                        }
+                    </MatTab>
+                </MatTabGroup>
+            }
+        </div>
+    </MatTab>
+    <MatTab Label="Discussion">
+        <br />
+        <ul level="0">
+            @foreach (var comment in CurrentReview.Comments)
+            {
+                <CommentItem CommentNode=@comment Level=1 @key=comment CurrentReview="CurrentReview" />
+            }
+        </ul>
+    </MatTab>
+    <MatTab Label="Reviewers">
+        <br />
+        <div>
+            @foreach (var reviewer in CurrentReview.Reviewers)
+            {
+                <p>
+                    @reviewer.User.Name @reviewer.User.Surname
+                    @if (reviewer.User.Id == CurrentUser.Id)
+                    {
+                        <b>(you)</b>
+                    }
+                </p>
+
+                @if (CurrentReview.Approvals?.Where(a => a.User?.Id == reviewer.User?.Id)?.OrderByDescending(a => a?.CreatedDate)?.FirstOrDefault()?.Status == ApprovalStatus.Approved)
                 {
-                    <MatTable ShowPaging="CurrentReview.Warnings.Count(w => w.Visit != null && w.Visit.Id == ReviewingVisit.Id) > 5"Items="CurrentReview.Warnings.Where(w=>w.Visit != null && w.Visit.Id == ReviewingVisit.Id)">
-                        <MatTableRow Context="ctx">
-                            <td>@ctx.WarningText</td>
-                        </MatTableRow>
-                    </MatTable>
+                    <p style="font-size: 80%">Approved at @CurrentReview.Approvals?.Where(a => a.User?.Id == reviewer.User?.Id)?.OrderByDescending(a => a?.CreatedDate)?.FirstOrDefault()?.CreatedDate</p>
                 }
-                else
+                @if (CurrentReview.Approvals?.Where(a => a.User?.Id == reviewer.User?.Id)?.OrderByDescending(a => a?.CreatedDate)?.FirstOrDefault()?.Status == ApprovalStatus.NeedsWork)
                 {
-                    <p>No warnings occured during submission</p>
+                    <p style="font-size: 80%">NeedsWork @CurrentReview.Approvals?.Where(a => a.User?.Id == reviewer.User?.Id)?.OrderByDescending(a => a?.CreatedDate)?.FirstOrDefault()?.CreatedDate</p>
                 }
-            </MatTab>
-        </MatTabGroup>
-    }
-</div>
+                @if (CurrentReview.Approvals?.Where(a => a.User?.Id == reviewer.User?.Id)?.OrderByDescending(a => a?.CreatedDate)?.FirstOrDefault()?.Status == ApprovalStatus.Rejecting)
+                {
+                    <p style="font-size: 80%">Rejected @CurrentReview.Approvals?.Where(a => a.User?.Id == reviewer.User?.Id)?.OrderByDescending(a => a?.CreatedDate)?.FirstOrDefault()?.CreatedDate</p>
+                }
+                @if (!CurrentReview.Approvals.Any(a => a.User.Id == reviewer.User.Id))
+                {
+                    <p style="font-size: 80%">No actions yet @CurrentReview.Approvals?.Where(a => a.User?.Id == reviewer.User?.Id)?.OrderByDescending(a => a?.CreatedDate)?.FirstOrDefault()?.CreatedDate</p>
+                }
+                <MatDivider></MatDivider>
+            }
+        </div>
+    </MatTab>
+</MatTabGroup>
 
 <MatButton OnClick="PostComment">Post comment</MatButton>
-<MatButton OnClick="ShowDiscussion">Discussion</MatButton>
-
-
-@if (ReviewingVisit != null)
-{
-    <MatButton OnClick="PostCommentOnCurrentVisit">Post comment on current visit</MatButton>
-
-}
-@if (showDiscussion)
-{
-    <ul level="0">
-        @foreach (var comment in CurrentReview.Comments)
-        {
-            <CommentItem CommentNode=@comment Level=1 @key=comment CurrentReview="CurrentReview" />
-        }
-    </ul>
-}
 
 @page "/review/{id}"
 @using Blazored.SessionStorage
 @using TravelManagerFE.Data.Models
 @using Newtonsoft.Json
+@using Radzen
+@using Radzen.Blazor
+@using Radzen.Blazor.Rendering
 
 @inject TripService TripService
 @inject ISessionStorageService SessionStorage
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
-
+@inject DialogService DialogService
+@inject IMatToaster Toaster
 
 @code {
+
     [Parameter]
     public string Id { get; set; }
+
     public Trip Trip { get; set; }
     public User CurrentUser { get; set; }
     public Review CurrentReview { get; set; }
@@ -178,7 +252,32 @@
     private string updateButtonStyle { get; set; }
     private string rejectButtonStyle { get; set; }
 
-    [CascadingParameter] public IModalService Modal { get; set; }
+    [CascadingParameter]
+    public IModalService Modal { get; set; }
+
+
+    RadzenScheduler<Appointment> scheduler;
+    Dictionary<DateTime, string> events = new Dictionary<DateTime, string>();
+
+    IList<Appointment> appointments = new List<Appointment>();
+
+    public class Appointment
+    {
+        public DateTime Start { get; set; } = DateTime.Now;
+        public DateTime End { get; set; } = DateTime.Now;
+        public string Text { get; set; } = string.Empty;
+    }
+
+
+    void OnAppointmentRender(SchedulerAppointmentRenderEventArgs<Appointment> args)
+    {
+        // Never call StateHasChanged in AppointmentRender - would lead to infinite loop
+
+        if (args.Data.Text == "Birthday")
+        {
+            args.Attributes["style"] = "background: red";
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -196,6 +295,12 @@
         Trip.Reviews.Add(review);
 
         CurrentReview = review;
+        Trip.Visits.ForEach(v => appointments.Add(new Appointment
+        {
+            Start = v.Arrival,
+            End = v.Departure,
+            Text = v.Location.Title
+        }));
     }
 
     public async void PostStatus(MouseEventArgs e, ReviewStatus reviewStatus)
@@ -209,6 +314,7 @@
 
         CurrentReview = TripService.AddReviewStatus(statusRequest);
 
+        ShowToast("Succesfully posted status change", MatToastType.Info, "Success", false);
         StateHasChanged();
     }
 
@@ -359,20 +465,20 @@
 
         switch (approval.Status)
         {
-            case ReviewStatus.Approved:
+            case ApprovalStatus.Approved:
                 if (approved == ReviewStatus.Approved)
                 {
                     return true;
                 }
                 break;
-            case ReviewStatus.NeedsWork:
+            case ApprovalStatus.NeedsWork:
                 if (approved == ReviewStatus.NeedsWork)
                 {
                     //TODO style fixup on status change
                     return true;
                 }
                 break;
-            case ReviewStatus.Rejected:
+            case ApprovalStatus.Rejecting:
                 if (approved == ReviewStatus.Rejected)
                 {
                     return true;
@@ -408,6 +514,30 @@
     private int CalculateChildComments(Comment parent)
     {
         return parent.ChildComments.Sum(comment => CalculateChildComments(comment));
+    }
+
+    private void FinalizeAsCreator()
+    {
+        TripService.FinalizeTrip(Trip.Id, CurrentUser.Id);
+    }
+
+    private void ShowToast(string text, MatToastType type, string title, bool requireInteraction)
+    {
+        Toaster.Add(text, type, title, null, config =>
+        {
+            config.ShowCloseButton = true;
+            config.ShowProgressBar = true;
+
+            //config.ShowTransitionDuration = Convert.ToInt32(_showTransitionDuration);
+            config.VisibleStateDuration = Convert.ToInt32(5000);
+            config.RequireInteraction = requireInteraction;
+            //config.HideTransitionDuration = Convert.ToInt32(_hideTransitionDuration);
+
+            if (requireInteraction)
+            {
+                config.Onclick = toast => Task.CompletedTask;
+            }
+        });
     }
 
 }

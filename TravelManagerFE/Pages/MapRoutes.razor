@@ -96,11 +96,10 @@
         {
             Position = visitLatLng,
             Map = map1.InteropObject,
-            Label = $"{visit.Location.Address}",
-            Icon = new Icon()
-            {
-                Url = "https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png"
-            }
+            //Icon = new Icon()
+            //{
+            //    //Url = "https://fonts.google.com/icons?selected=Material%20Icons%20Outlined%3Alocation_on"
+            //}
             //Icon = "https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png"
         });
 
@@ -108,14 +107,14 @@
 
         //var map = await marker.GetMap();
 
-        var icon = await marker.GetIcon();
+        //var icon = await marker.GetIcon();
 
-        Console.WriteLine($"Get icon result type is : {icon.Value.GetType()}");
+        //Console.WriteLine($"Get icon result type is : {icon.Value.GetType()}");
 
-        icon.Switch(
-            s => Console.WriteLine(s),
-            i => Console.WriteLine(i.Url),
-            _ => { });
+        //icon.Switch(
+        //    s => Console.WriteLine(s),
+        //    i => Console.WriteLine(i.Url),
+        //    _ => { });
 
         //if (map == map1.InteropObject)
         //{

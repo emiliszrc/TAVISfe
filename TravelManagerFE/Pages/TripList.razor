@@ -18,25 +18,25 @@
                     <MatTab Label="Your trips">
                         @if (trips.Any())
                         {
-                            <MatTable Items="trips" AllowSelection="true" SelectionChanged="GetDetails" ShowPaging="@(trips.Count > 5)">
+                            <MatTable Items="trips.Where(t=>t.TripStatus != TripStatus.Final)" AllowSelection="true" SelectionChanged="GetDetails" ShowPaging="@(trips.Count > 5)">
                                 <MatTableHeader>
                                     <th style="width:25%">Title</th>
                                     <th style="width:25%">Creator</th>
                                     <th style="width:25%">Organisation</th>
-                                    <th style="width:25%">In review</th>
+                                    <th style="width:25%">Status</th>
                                     <th></th>
                                 </MatTableHeader>
                                 <MatTableRow Context="ctx">
                                     <td>@ctx.Title</td>
                                     <td>@ctx.Creator.Name @ctx.Creator.Surname</td>
                                     <td>@ctx.Organisation?.Title</td>
-                                    @if (ctx.TripStatus == TripStatus.InReview)
+                                    @if (ctx.TripStatus == TripStatus.New)
                                             {
-                                        <td><MatIcon Icon="visibility"></MatIcon></td>
+                                                <td><MatIcon Icon="mode_edit_outline"></MatIcon></td>
                                             }
                                             else
                                             {
-                                        <td><MatIcon Icon="mode_edit_outline"></MatIcon></td>
+                                                <td><MatIcon Icon="visibility"></MatIcon></td>
                                             }
                                 </MatTableRow>
                             </MatTable>
@@ -50,25 +50,25 @@
                         @if (organisationTrips.Any())
                         {
 
-                            <MatTable Items="organisationTrips" AllowSelection="true" SelectionChanged="GetDetails" ShowPaging="@(organisationTrips.Count > 5)">
+                            <MatTable Items="organisationTrips.Where(t=>t.TripStatus != TripStatus.Final)" AllowSelection="true" SelectionChanged="GetDetails" ShowPaging="@(organisationTrips.Count > 5)">
                                 <MatTableHeader>
                                     <th style="width:25%">Title</th>
                                     <th style="width:25%">Creator</th>
                                     <th style="width:25%">Organisation</th>
-                                    <th style="width:25%">In review</th>
+                                    <th style="width:25%">Status</th>
                                     <th></th>
                                 </MatTableHeader>
                                 <MatTableRow Context="ctx">
                                     <td>@ctx.Title</td>
                                     <td>@ctx.Creator.Name @ctx.Creator.Surname</td>
                                     <td>@ctx.Organisation?.Title</td>
-                                    @if (ctx.TripStatus == TripStatus.InReview)
+                                    @if (ctx.TripStatus == TripStatus.New)
                                             {
-                                        <td><MatIcon Icon="visibility"></MatIcon></td>
+                                                <td><MatIcon Icon="mode_edit_outline"></MatIcon></td>
                                             }
                                             else
                                             {
-                                        <td><MatIcon Icon="mode_edit_outline"></MatIcon></td>
+                                                <td><MatIcon Icon="visibility"></MatIcon></td>
                                             }
                                 </MatTableRow>
                             </MatTable>

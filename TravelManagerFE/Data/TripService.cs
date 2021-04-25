@@ -178,9 +178,10 @@ namespace TravelManagerFE.Data
 
         public Review GetCurrentReviewByTripId(string tripId)
         {
-            var client = new RestClient(baseUrl + $"trips/{tripId}/Review");
+            var client = new RestClient(baseUrl + $"reviews/by-trip");
             var request = new RestRequest(Method.GET);
             request.AddHeader("content-type", "application/json");
+            request.AddQueryParameter("tripId", tripId);
 
             var response = client.Execute(request);
 
@@ -566,6 +567,25 @@ namespace TravelManagerFE.Data
             var response = client.Execute(request);
 
             if(!response.StatusCode.Equals(System.Net.HttpStatusCode.OK))
+            {
+                //throw new TripAdvisorApiException($"Could not retrieve information from TripAdvisor. Response code: {response.StatusCode}");
+            }
+
+            var reviewResponse = JsonConvert.DeserializeObject<Trip>(response.Content);
+
+            return reviewResponse;
+        }
+
+        public Trip FinalizeTrip(string tripId, string userId)
+        {
+            var client = new RestClient(baseUrl + $"trips/{tripId}/Finalize");
+            var request = new RestRequest(Method.POST);
+            request.AddHeader("content-type", "application/json");
+            request.AddQueryParameter("userId", userId);
+
+            var response = client.Execute(request);
+
+            if (!response.StatusCode.Equals(System.Net.HttpStatusCode.OK))
             {
                 //throw new TripAdvisorApiException($"Could not retrieve information from TripAdvisor. Response code: {response.StatusCode}");
             }

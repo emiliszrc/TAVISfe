@@ -7,6 +7,8 @@
 @using System
 @using System.Collections.Generic
 @using System.Linq
+@using Blazored.SessionStorage
+@using Newtonsoft.Json
 
 @page "/tripDetails/{id}"
 
@@ -16,6 +18,7 @@
 @inject TripService TripService
 @inject OrganisationService OrganisationService;
 @inject IMatToaster Toaster
+@inject ISessionStorageService sessionStorageService;
 
 <div>
     <b>@trip.Title</b>
@@ -138,9 +141,16 @@
     <MatButton @onclick="DisplayDestinationSearch">Add new visit</MatButton>
     <MatButton @onclick="ValidateTrip">Validate trip</MatButton>
 
-    @if (validity != null && validity.IsValid && trip.Organisation != null)
+    @if (validity != null && validity.IsValid)
     {
-        <MatButton @onclick="SubmitForReview">Submit for review</MatButton>
+        @if (trip.Organisation != null)
+        {
+            <MatButton @onclick="SubmitForReview">Submit for review</MatButton>
+        }
+        else
+        {
+            <MatButton @onclick="Submit">Submit</MatButton>
+        }
     }
 
     @if (DestinationSearchShown)
@@ -189,7 +199,7 @@ else
         trip = TripService.GetTrip(Id);
         trip.Visits = trip.Visits.OrderBy(destination => destination.VisitationIndex).ToList();
 
-        if (trip.TripStatus == TripStatus.InReview)
+        if (trip.TripStatus == TripStatus.InReview || trip.TripStatus == TripStatus.ReadyToFinalize)
         {
             review = TripService.GetCurrentReviewByTripId(trip.Id);
         }
@@ -230,7 +240,7 @@ else
 
     private void OpenVisitEdit(Visit context)
     {
-        NavigationManager.NavigateTo($"/tripDetails/editVisit/{context.Id}");
+        NavigationManager.NavigateTo($"/tripDetails/{trip.Id}/editVisit/{context.Id}");
     }
 
     private void RemoveVisit(Visit context)
@@ -316,6 +326,19 @@ else
     public void GoToReview()
     {
         NavigationManager.NavigateTo($"/review/{review.Id}");
+    }
+
+    private async void Submit()
+    {
+        var user = await sessionStorageService.GetItemAsync<string>("user");
+
+        if (user != null)
+        {
+            TripService.FinalizeTrip(trip.Id, JsonConvert.DeserializeObject<User>(user).Id);
+        }
+
+        ShowToast("Successful finalization of the trip", MatToastType.Info, "Success", false);
+        NavigationManager.NavigateTo($"/tripAudit/{trip.Id}");
     }
 
 }

@@ -1,13 +1,13 @@
 ﻿@using TravelManagerFE.Data.Models
 @using Humanizer
-<h3>Edit Visit</h3>
-@page "/tripDetails/editVisit/{id}"
+<h3>Edit Visit</h3> <br/>
+@page "/tripDetails/{tripId}/editVisit/{id}"
 @inject TripService TripService
 @inject NavigationManager NavigationManager
 
-<div class="mat-layout-grid mat-layout-grid-align-left" style="max-width: 800px;">
-    <div class="mat-layout-grid-inner">
-        <div class="mat-layout-grid-cell">
+<div class="mat-layout-grid mat-layout-grid-align-left" style="max-width: 1500px;">
+    <div class="mat-layout-grid-inner" style="display:block;">
+        <div class="mat-layout-grid-cell" style="float: left; width: 300px;">
             <EditForm Model="Visit.Location">
                 <p>
                     <MatTextField @bind-Value="Visit.Location.Title" HelperText="Title" Label="Title"></MatTextField>
@@ -32,13 +32,31 @@
             </EditForm>
             <MatButton @onclick="DisplayDestinationSearch">Search for location</MatButton>
         </div>
-        <div class="mat-layout-grid-cell">
+        <div class="mat-layout-grid-cell" style="float: left; width: 350px;">
             <EditForm Model="Visit">
                 <MatDatePicker @bind-Value="Visit.Arrival" HelperText="Arrival" EnableTime="true" Enable24hours="true"></MatDatePicker>
                 <MatDatePicker @bind-Value="Visit.Departure" HelperText="Departure" EnableTime="true" Enable24hours="true"></MatDatePicker>
             </EditForm>
             <MatButton @onclick="UpdateVisit">Submit</MatButton>
         </div>
+        @if (Trip != null)
+        {
+            <h4>Other visits</h4> <br/>
+            <div class="mat-layout-grid-cell" style="float: left; width: 800px; overflow-y: auto; overflow-x: hidden">
+                
+                @foreach (var visit in Trip.Visits.OrderBy(v=>v.VisitationIndex))
+                {
+                    <p>@visit.Location.Title
+                    @if (visit.Id == Id)
+                    {
+                        <b>(currently reviewing this visit)</b>
+                    }
+                        </p>
+                    <p style="font-size: 80%;">Arriving at @visit.Arrival.ToLocalTime(), departing at @visit.Departure.ToLocalTime()</p>
+                    <MatDivider></MatDivider>
+                }
+            </div>
+        }
     </div>
 </div>
 
@@ -50,6 +68,10 @@
 @code {
     [Parameter]
     public string Id { get; set; }
+    [Parameter]
+    public string TripId { get; set; }
+
+    public Trip Trip { get; set; } = new Trip();
     public Visit Visit { get; set; } = new Visit();
 
     private bool DestinationSearchShown { get; set; }
@@ -61,6 +83,7 @@
         base.OnInitialized();
         DestinationSearchShown = false;
         Visit = TripService.GetVisitById(Id);
+        Trip = TripService.GetTrip(TripId);
     }
 
 

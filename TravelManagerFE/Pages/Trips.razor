@@ -20,7 +20,7 @@
         <MatTableRow Context="ctx">
             <td>@ctx.Title</td>
             <td>@ctx.Creator.Name @ctx.Creator.Surname</td>
-            <td>@ctx.Organisation?.Title</td>
+            <td>@(ctx.Organisation == null ? "-" : ctx.Organisation.Title)</td>
             <td>@ctx.Visits?.OrderBy(v => v.Arrival).FirstOrDefault()?.Arrival</td>
             <td>@ctx.Visits?.OrderByDescending(v => v.Departure).FirstOrDefault()?.Departure</td>
         </MatTableRow>

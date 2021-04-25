@@ -21,7 +21,9 @@
 
 
 <div>
-    <input placeholder="location" @bind="query" />
+    <div>
+        <MatTextField placeholder="location" @bind-Value="query"/>
+    </div>
     <MatButton @onclick="SearchForDestinations">Search</MatButton>
 </div>
 <div>
@@ -47,18 +49,24 @@
                 </tr>
             }
         </table>*@
-        <Table TableItem="Location" Items="locations" PageSize="15" RowClickAction="RowClick">
-            <Column TableItem="Location" Title="Id" Field="@(x => x.Title)" Sortable="true" Filterable="true" Width="10%" />
-            <Column TableItem="Location" Title="First Name" Field="@(x => x.Type)" Sortable="true" Filterable="true" Width="20%" />
-            <Column TableItem="Location" Title="Last Name" Field="@(x => x.Address)" Sortable="true" Filterable="true" Width="20%" />
-            <Pager ShowPageNumber="true" ShowTotalCount="true" />
-        </Table>
+        <MatTable Items="@locations" PageSize="15" ShowPaging="true" UseSortHeaderRow="true" AllowSelection="true" SelectionChanged="RowClick">
+            <MatTableHeader>
+                <th style="width:25%" >Type</th>
+                <th style="width:25%">Address</th>
+                <th style="width:25%">Title</th>
+            </MatTableHeader>
+            <MatTableRow >
+                <td>@context.Type</td>
+                <td>@context.Address</td>
+                <td>@context.Title</td>
+            </MatTableRow>
+        </MatTable>
     }
 
 @code {
     private List<Location> locations = new List<Location>();
 
-    private string query;
+    private string query = string.Empty;
 
     private bool tripViewEnabled { get; set; }
 
@@ -76,10 +84,11 @@
         locations = await SearchService.SearchForDestinations(query);
     }
 
-    private void RowClick(Location location)
+    private void DisplayTrips() => tripViewEnabled = !tripViewEnabled;
+
+    private void RowClick(object obj)
     {
-        OnClick.InvokeAsync(location);
+        OnClick.InvokeAsync((Location)obj);
     }
 
-    private void DisplayTrips() => tripViewEnabled = !tripViewEnabled;
 }

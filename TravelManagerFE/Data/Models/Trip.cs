@@ -23,6 +23,7 @@ namespace TravelManagerFE.Data
     {
         New,
         InReview,
+        ReadyToFinalize,
         Final
     }
 }
