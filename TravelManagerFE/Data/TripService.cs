@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RestSharp;
 using TravelManagerFE.Data.Models;
@@ -530,13 +531,14 @@ namespace TravelManagerFE.Data
             request.AddJsonBody(participationRequest);
 
             var response = client.Execute(request);
-
-            if (!response.StatusCode.Equals(System.Net.HttpStatusCode.OK))
+            var reviewResponse = new List<ClientResponse>();
+            if (response.StatusCode.Equals(System.Net.HttpStatusCode.OK))
             {
                 //throw new TripAdvisorApiException($"Could not retrieve information from TripAdvisor. Response code: {response.StatusCode}");
+
+                reviewResponse = JsonConvert.DeserializeObject<List<ClientResponse>>(response.Content);
             }
 
-            var reviewResponse = JsonConvert.DeserializeObject<List<ClientResponse>>(response.Content);
 
             return reviewResponse;
         }
